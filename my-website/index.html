@@ -1,0 +1,3542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ceepo's Corner</title>
+    <link rel="stylesheet" href="style.css" />
+
+    <style>
+        .relay-stage {
+            display: grid;
+            gap: 12px;
+        }
+
+        .relay-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .relay-label {
+            color: var(--warning);
+            font-size: 0.88rem;
+        }
+
+        .relay-input {
+            width: 100%;
+            border: 1px solid var(--border);
+            background: rgba(10, 0, 0, 0.92);
+            color: var(--text);
+            font: inherit;
+            padding: 9px 10px;
+            outline: none;
+            box-shadow: inset 0 0 8px rgba(255, 80, 80, 0.08);
+            caret-color: transparent;
+        }
+
+            .relay-input.relay-input-active {
+                border-color: var(--warning);
+                box-shadow: var(--glow), inset 0 0 8px rgba(255, 80, 80, 0.12);
+            }
+
+            .relay-input:disabled {
+                opacity: 0.65;
+            }
+
+        .relay-hint,
+        .relay-status-line {
+            color: var(--dim);
+            margin: 0;
+        }
+
+        .relay-status-line {
+            min-height: 1.5em;
+            color: var(--warning);
+        }
+
+        .relay-chat {
+            display: grid;
+            gap: 10px;
+        }
+
+        .relay-chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border: 1px solid rgba(255, 80, 80, 0.45);
+            background: rgba(255, 80, 80, 0.06);
+            padding: 8px 10px;
+        }
+
+        .relay-chat-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--warning);
+        }
+
+        .relay-chat-dot {
+            width: 9px;
+            height: 9px;
+            border: 1px solid var(--warning);
+            background: var(--accent);
+            box-shadow: var(--glow);
+        }
+
+        .relay-chat-log {
+            min-height: 170px;
+            max-height: 260px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 80, 80, 0.45);
+            background: rgba(10, 0, 0, 0.92);
+            padding: 10px;
+            color: var(--text);
+        }
+
+        .relay-chat-system {
+            color: var(--dim);
+            margin-bottom: 10px;
+        }
+
+        .relay-chat-input-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+        }
+
+        .relay-chat-input {
+            width: 100%;
+            border: 1px solid var(--border);
+            background: rgba(10, 0, 0, 0.92);
+            color: var(--text);
+            font: inherit;
+            padding: 9px 10px;
+            outline: none;
+        }
+
+            .relay-chat-input:disabled {
+                opacity: 0.6;
+            }
+
+        .relay-wait-cursor {
+            display: inline-block;
+            margin-left: 5px;
+            animation: blink 1s steps(1) infinite;
+        }
+
+        #utility-relay {
+            width: 100%;
+            max-height: min(430px, 48vh);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) rgba(20, 0, 0, 0.95);
+        }
+
+            #utility-relay::-webkit-scrollbar,
+            .relay-chat-log::-webkit-scrollbar {
+                width: 10px;
+            }
+
+            #utility-relay::-webkit-scrollbar-track,
+            .relay-chat-log::-webkit-scrollbar-track {
+                background: rgba(20, 0, 0, 0.95);
+                border-left: 1px solid rgba(255, 80, 80, 0.4);
+            }
+
+            #utility-relay::-webkit-scrollbar-thumb,
+            .relay-chat-log::-webkit-scrollbar-thumb {
+                background: rgba(255, 26, 26, 0.65);
+                border: 1px solid #5a0000;
+                box-shadow: inset 0 0 6px rgba(255, 80, 80, 0.35);
+            }
+
+                #utility-relay::-webkit-scrollbar-thumb:hover,
+                .relay-chat-log::-webkit-scrollbar-thumb:hover {
+                    background: var(--warning);
+                }
+
+            #utility-relay input {
+                width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+            }
+
+        .relay-sequence-log {
+            min-height: 174px;
+            border: 1px solid rgba(255, 80, 80, 0.45);
+            background: rgba(10, 0, 0, 0.92);
+            padding: 10px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            color: var(--text);
+        }
+
+        .relay-sequence-line {
+            margin: 0 0 6px;
+        }
+
+            .relay-sequence-line.success {
+                color: var(--warning);
+            }
+
+        .relay-ascii-progress {
+            color: var(--text);
+            text-shadow: var(--glow);
+            white-space: pre;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        @media (pointer: fine) {
+            html,
+            body,
+            body *,
+            input,
+            textarea,
+            select,
+            button,
+            label,
+            a,
+            #utility-relay,
+            #utility-relay * {
+                cursor: none !important;
+            }
+        }
+
+        @media (max-height: 760px) {
+            #utility-relay {
+                max-height: 330px;
+            }
+        }
+
+
+        .audio-corrupted .player-button,
+        .audio-corrupted .terminal-volume,
+        .audio-corrupted .ascii-progress-bar {
+            opacity: 0.42;
+            pointer-events: none;
+        }
+
+        .audio-repair-log {
+            min-height: 1.4em;
+            margin-top: 8px;
+            color: var(--warning);
+            white-space: pre-wrap;
+        }
+
+        .audio-source-meta {
+            display: none;
+            margin-top: 8px;
+            color: var(--dim);
+        }
+
+            .audio-source-meta.visible {
+                display: block;
+            }
+
+        .relay-chat-message {
+            margin: 0 0 9px;
+            line-height: 1.45;
+        }
+
+        .relay-chat-name {
+            color: var(--warning);
+        }
+
+        .relay-chat-message.user .relay-chat-name {
+            color: var(--text);
+        }
+
+
+        .relay-chat-message.system,
+        .relay-chat-message.system .relay-chat-name {
+            color: var(--dim);
+        }
+
+        .relay-chat-typing {
+            min-height: 1.5em;
+            color: var(--warning);
+        }
+
+        .relay-chat-input.relay-input-active {
+            border-color: var(--warning);
+            background: rgba(48, 0, 0, 0.96);
+            box-shadow: 0 0 0 1px rgba(255, 112, 112, 0.65), var(--glow-strong), inset 0 0 12px rgba(255, 80, 80, 0.18);
+            animation: relayInputReadyPulse 1.15s steps(2, end) infinite;
+        }
+
+        .relay-chat-input-row.user-turn {
+            position: relative;
+        }
+
+            .relay-chat-input-row.user-turn::before {
+                content: "> INPUT REQUIRED";
+                position: absolute;
+                left: 0;
+                bottom: calc(100% + 4px);
+                color: var(--warning);
+                font-size: 0.75rem;
+                text-shadow: var(--glow);
+                pointer-events: none;
+            }
+
+        @keyframes relayInputReadyPulse {
+            0%, 100% {
+                filter: brightness(1);
+            }
+
+            50% {
+                filter: brightness(1.35);
+            }
+        }
+
+        html,
+        body,
+        body *,
+        input,
+        textarea,
+        select,
+        button,
+        label,
+        a {
+            cursor: none !important;
+        }
+
+
+        .corrupted-game-tab {
+            display: none;
+        }
+
+            .corrupted-game-tab.revealed {
+                display: flex;
+                animation: corruptedEntryReveal 0.65s steps(2, end) forwards;
+            }
+
+            .corrupted-game-tab .file-name {
+                text-shadow: var(--glow), 2px 0 0 rgba(255, 26, 26, 0.35), -2px 0 0 rgba(255, 112, 112, 0.2);
+            }
+
+        .favorites-nav-alert {
+            animation: favoritesNavGlitch 0.22s steps(2, end) 4, favoritesNavPulse 1.15s ease-in-out 0.9s infinite;
+            border-color: var(--warning) !important;
+            box-shadow: var(--glow-strong), 0 0 18px rgba(255, 80, 80, 0.55) !important;
+        }
+
+            .favorites-nav-alert::after {
+                content: " *";
+                color: var(--warning);
+            }
+
+        .corrupted-entry {
+            border: 1px dashed var(--warning);
+            padding: 14px;
+            background: repeating-linear-gradient( 0deg, rgba(255, 26, 26, 0.025) 0, rgba(255, 26, 26, 0.025) 2px, transparent 2px, transparent 5px ), rgba(10, 0, 0, 0.94);
+            box-shadow: inset 0 0 16px rgba(255, 26, 26, 0.08);
+        }
+
+            .corrupted-entry h3 {
+                color: var(--warning);
+            }
+
+        .corrupted-entry-status {
+            color: var(--warning);
+            white-space: pre-wrap;
+            line-height: 1.7;
+        }
+
+        .corrupted-entry-warning {
+            margin-top: 14px;
+            color: var(--dim);
+            animation: corruptedWarningBlink 1.1s steps(1) infinite;
+        }
+
+        .topbar.intrusion-warning {
+            animation: intrusionTopbarGlitch 0.28s steps(2, end) 7;
+            color: #ffffff;
+            border-bottom-color: var(--warning);
+            box-shadow: inset 0 -2px 0 rgba(255, 112, 112, 0.55);
+        }
+
+        @keyframes intrusionTopbarGlitch {
+            0%, 100% {
+                transform: translateX(0);
+                filter: brightness(1);
+            }
+
+            30% {
+                transform: translateX(-2px);
+                filter: brightness(1.8);
+            }
+
+            65% {
+                transform: translateX(2px);
+                filter: brightness(0.75);
+            }
+        }
+
+        @keyframes corruptedEntryReveal {
+            0% {
+                opacity: 0;
+                transform: translateX(-8px);
+                filter: brightness(2.4);
+            }
+
+            25% {
+                opacity: 1;
+                transform: translateX(5px);
+            }
+
+            50% {
+                transform: translateX(-3px);
+                filter: brightness(1.5);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes favoritesNavPulse {
+            0%, 100% {
+                filter: brightness(1);
+                box-shadow: var(--glow-strong), 0 0 12px rgba(255, 80, 80, 0.35);
+            }
+
+            50% {
+                filter: brightness(1.35);
+                box-shadow: var(--glow-strong), 0 0 24px rgba(255, 112, 112, 0.75);
+            }
+        }
+
+        @keyframes favoritesNavGlitch {
+            0%, 100% {
+                transform: translateX(0);
+                filter: brightness(1);
+            }
+
+            35% {
+                transform: translateX(-2px);
+                filter: brightness(2);
+            }
+
+            70% {
+                transform: translateX(2px);
+                filter: brightness(0.7);
+            }
+        }
+
+        @keyframes corruptedWarningBlink {
+            0%, 55%, 100% {
+                opacity: 1;
+            }
+
+            56%, 70% {
+                opacity: 0.35;
+            }
+        }
+
+        .right-column {
+            grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+            min-height: 0;
+        }
+
+        .music-window,
+        .misc-window {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+            .music-window .window-content,
+            .misc-window .window-content {
+                height: calc(100% - 42px);
+                min-height: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+
+        .player-meta,
+        #now-playing,
+        #player-status,
+        .audio-repair-log,
+        .audio-system-message {
+            min-width: 0;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .audio-repair-log {
+            max-height: 150px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 6px;
+        }
+
+        .music-window .window-content,
+        .misc-window .window-content,
+        .audio-repair-log {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent) rgba(20, 0, 0, 0.9);
+        }
+
+            .music-window .window-content::-webkit-scrollbar,
+            .misc-window .window-content::-webkit-scrollbar,
+            .audio-repair-log::-webkit-scrollbar {
+                width: 10px;
+            }
+
+            .music-window .window-content::-webkit-scrollbar-track,
+            .misc-window .window-content::-webkit-scrollbar-track,
+            .audio-repair-log::-webkit-scrollbar-track {
+                background: rgba(20, 0, 0, 0.9);
+                border-left: 1px solid rgba(255, 80, 80, 0.35);
+            }
+
+            .music-window .window-content::-webkit-scrollbar-thumb,
+            .misc-window .window-content::-webkit-scrollbar-thumb,
+            .audio-repair-log::-webkit-scrollbar-thumb {
+                background: rgba(255, 26, 26, 0.55);
+                border: 2px solid rgba(20, 0, 0, 0.95);
+                box-shadow: inset 0 0 8px rgba(255, 80, 80, 0.35);
+            }
+
+                .music-window .window-content::-webkit-scrollbar-thumb:hover,
+                .misc-window .window-content::-webkit-scrollbar-thumb:hover,
+                .audio-repair-log::-webkit-scrollbar-thumb:hover {
+                    background: rgba(255, 80, 80, 0.8);
+                }
+
+        .build-label {
+            margin: 18px 0 0;
+            color: var(--dim);
+            font-size: 0.8rem;
+            text-align: right;
+        }
+
+        .setting-toggle {
+            width: 100%;
+            text-align: left;
+        }
+
+        body.crt-disabled::before,
+        body.crt-disabled::after,
+        body.crt-disabled .crt-shimmer {
+            display: none !important;
+        }
+
+        body.crt-disabled .boot-screen h1,
+        body.crt-disabled .panel h2,
+        body.crt-disabled .project h3,
+        body.crt-disabled .window-title,
+        body.crt-disabled .directory-header,
+        body.crt-disabled .current-file,
+        body.crt-disabled .topbar,
+        body.crt-disabled .ascii,
+        body.crt-disabled .nav-link,
+        body.crt-disabled .boot-lines,
+        body.crt-disabled .status-box strong,
+        body.crt-disabled .meta-label,
+        body.crt-disabled .meta-value,
+        body.crt-disabled .game-tab,
+        body.crt-disabled .file-name,
+        body.crt-disabled .file-marker {
+            animation: none !important;
+        }
+
+        .status-control-stack {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+            .status-control-stack .boot-button {
+                width: 100%;
+                text-align: left;
+            }
+
+        .warning-button {
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+            .warning-button:hover,
+            .warning-button:focus-visible {
+                background: rgba(255, 80, 80, 0.18);
+                color: #ffffff;
+            }
+
+        .reset-confirmation {
+            margin-top: 14px;
+            padding: 12px;
+            border: 1px dashed var(--warning);
+            background: rgba(40, 0, 0, 0.88);
+            box-shadow: inset 0 0 12px rgba(255, 80, 80, 0.08);
+        }
+
+        .reset-confirmation-text {
+            margin: 0 0 12px;
+            color: var(--warning);
+        }
+
+        .reset-confirmation-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Prevent the native PC cursor from appearing over themed scrollbars. */
+        @media (pointer: fine) {
+            *::-webkit-scrollbar,
+            *::-webkit-scrollbar-track,
+            *::-webkit-scrollbar-track-piece,
+            *::-webkit-scrollbar-thumb,
+            *::-webkit-scrollbar-button,
+            *::-webkit-scrollbar-corner,
+            *::-webkit-resizer {
+                cursor: none !important;
+            }
+
+            html,
+            body,
+            .left-column main,
+            .music-window .window-content,
+            .misc-window .window-content,
+            #utility-relay,
+            .relay-chat-log,
+            .relay-sequence-log,
+            .audio-repair-log,
+            .boot-lines,
+            .tab-view,
+            .log-panel,
+            .ascii-wrap {
+                cursor: none !important;
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .right-column {
+                grid-template-rows: auto auto;
+            }
+
+            .music-window,
+            .misc-window {
+                min-height: 320px;
+            }
+
+                .music-window .window-content,
+                .misc-window .window-content {
+                    height: auto;
+                    max-height: 520px;
+                }
+        }
+    </style>
+</head>
+<body>
+    <div class="boot-overlay" id="boot-overlay">
+        <div class="boot-screen">
+            <h1>CEEPO'S CORNER</h1>
+            <p>Personal archive terminal // click to begin startup sequence</p>
+
+            <div class="boot-lines"><span id="boot-lines"></span><span id="boot-cursor" class="boot-cursor">█</span></div>
+
+            <div class="boot-progress-wrap">
+                <div id="boot-progress-label">LOAD STATUS: 000%</div>
+                <div id="boot-progress-fill">[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]</div>
+            </div>
+
+            <div class="boot-actions">
+                <button class="boot-button" id="boot-button" type="button">[ ENTER TERMINAL ]</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="screen-transition" id="screen-transition"></div>
+
+    <div class="crt-shimmer"></div>
+
+    <div class="site-shell-wrap">
+        <div class="left-column">
+            <div class="page site-shell" id="site-shell">
+                <header>
+                    <div class="topbar">
+                        <span id="topbar-mode">CEEPO'S CORNER // USER MODE</span>
+                        <span id="clock">--:--:--</span>
+                    </div>
+
+                    <div class="boot" id="page-boot-text">
+                        <p>BOOT SEQUENCE INITIALIZED...</p>
+                        <p>MEMORY CHECK ........ OK</p>
+                        <p>ASCII RENDERER ...... OK</p>
+                        <p>WELCOME, VISITOR.</p>
+                    </div>
+
+                    <section class="hero">
+                        <div class="ascii-wrap">
+<pre class="ascii" id="hero-ascii">
+   ______________________  ____ _ _____    __________  ____  _   ____________ 
+  / ____/ ____/ ____/ __ \/ __ ( ) ___/   / ____/ __ \/ __ \/ | / / ____/ __ \
+ / /   / __/ / __/ / /_/ / / / //\__ \   / /   / / / / /_/ /  |/ / __/ / /_/ /
+/ /___/ /___/ /___/ ____/ /_/ / ___/ /  / /___/ /_/ / _, _/ /|  / /___/ _, _/ 
+\____/_____/_____/_/    \____/ /____/   \____/\____/_/ |_/_/ |_/_____/_/ |_|  
+
+:::::::::::::: TERMINAL ARCHIVE INTERFACE // CEEPO'S CORNER ::::::::::::::
+</pre>
+                        </div>
+                        <p class="subtitle" id="hero-subtitle">A personal archive terminal.</p>
+                    </section>
+
+                    <nav>
+                        <button class="nav-link nav-page-button active" data-page="home" type="button">[ HOME ]</button>
+                        <button class="nav-link nav-page-button" data-page="favorites" type="button">[ FAVORITES ]</button>
+                        <button class="nav-link nav-page-button" data-page="log" type="button">[ LOG ]</button>
+                        <button class="nav-link nav-page-button" data-page="links" type="button">[ LINKS ]</button>
+                    </nav>
+                </header>
+
+                <main id="main-panel">
+                    <section class="page-panel active" id="page-home">
+                        <section class="panel" id="about">
+                            <h2 class="panel-title">ABOUT</h2>
+                            <p>WELCOME TO CEEPO'S CORNER</p>
+                            <p>
+                                you have been granted special user access to my terminal in order to access
+                                my archive of personal interests! this place serves as a notepad of mine to
+                                be able to broadcast the things i love.
+                            </p>
+                            <p>
+                                the previous site was a dusty old google site so i got my shit together and
+                                did this! (check out the LOGS tab for more info)
+                            </p>
+                            <p>I HOPE YOU ENJOY YOUR STAY!</p>
+                            <p>use the navigation above to access different parts of the archive!</p>
+                        </section>
+
+                        <p class="build-label">BUILD 1.0.0 // ARCHIVE NODE 88</p>
+                    </section>
+
+                    <section class="page-panel" id="page-favorites">
+                        <section class="panel">
+                            <h2 class="panel-title">FAVORITES</h2>
+                            <p>Select a file to open its archive entry.</p>
+
+                            <div class="favorites-layout">
+                                <div class="tab-list">
+                                    <div class="directory-header">DIRECTORY://GAMES</div>
+
+                                    <button class="game-tab active" data-tab="signalis" type="button">
+                                        <span class="file-marker">&gt;</span>
+                                        <span class="file-name">SIGNALIS.EXE</span>
+                                    </button>
+
+                                    <button class="game-tab" data-tab="va11" type="button">
+                                        <span class="file-marker">&gt;</span>
+                                        <span class="file-name">VA11HALLA.EXE</span>
+                                    </button>
+
+                                    <button class="game-tab" data-tab="peri" type="button">
+                                        <span class="file-marker">&gt;</span>
+                                        <span class="file-name">PERIPETEIA.EXE</span>
+                                    </button>
+
+                                    <button class="game-tab" data-tab="pica" type="button">
+                                        <span class="file-marker">&gt;</span>
+                                        <span class="file-name">PICAYUNE_DREAMS.EXE</span>
+                                    </button>
+
+                                    <button class="game-tab" data-tab="stu" type="button">
+                                        <span class="file-marker">&gt;</span>
+                                        <span class="file-name">STUDIO_SYSTEM.EXE</span>
+                                    </button>
+
+                                    <button class="game-tab corrupted-game-tab"
+                                            id="dogwood-tab"
+                                            data-tab="dogwood"
+                                            type="button"
+                                            aria-hidden="true">
+                                        <span class="file-marker">&gt;</span>
+                                        <span class="file-name">DOGWOOD.EXE</span>
+                                    </button>
+                                </div>
+
+                                <div class="tab-view-wrap">
+                                    <div class="current-file" id="current-file">CURRENT FILE: SIGNALIS.EXE</div>
+
+                                    <div class="tab-view">
+                                        <div class="window-bar">
+                                            <span class="window-title" id="window-title">FILE://SIGNALIS</span>
+                                            <div class="window-controls" aria-hidden="true">
+                                                <span class="window-dot"></span>
+                                                <span class="window-dot"></span>
+                                                <span class="window-dot"></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="window-content">
+                                            <article class="game-entry active" id="signalis">
+                                                <h3>SIGNALIS</h3>
+
+                                                <div class="meta-strip">
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">GENRE</span>
+                                                        <span class="meta-value">Survival Horror</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">YEAR</span>
+                                                        <span class="meta-value">2022</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">PLATFORM</span>
+                                                        <span class="meta-value">PC / Console</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">DEV/PUB</span>
+                                                        <span class="meta-value">rose-engine / Balor Games</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="game-images">
+                                                    <img src="https://substackcdn.com/image/fetch/$s_!04ZI!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F381e6490-4ba3-4d4c-9d1e-f71f8581e06a_1920x1080.png" alt="Signalis img1">
+                                                    <img src="https://www.gematsu.com/wp-content/uploads/2022/06/SIGNALIS-Dated_06-11-22.jpg" alt="Signalis img2">
+                                                    <img src="https://rose-engine.org/signalis/images/screens/9.png" alt="Signalis img3">
+                                                    <img src="https://images.squarespace-cdn.com/content/v1/55ef0e29e4b099e22cdc9eea/461878a7-d941-4b28-acd1-ae0e21ede14c/SIGNALIS3.jpg" alt="Signalis img4">
+                                                </div>
+
+                                                <p>Signalis is a survival-horror game created by the beautiful folks at rose-engine and published by Balor Games (as of 2026).</p>
+                                                <p>
+                                                    Gameplay is HEAVILY reminiscent of resident evil and silent hill so if you like those you'll like that except with a twist (i love twists) its a 2.5D perspective. the combat is what you'd expect from this type of game with a few puzzles here and there.
+                                                </p>
+                                                <p>
+                                                    the artwork are BEAUTIFULLY made and the story is packed with emotion and the heavy feeling of loss (I wont spoil here)
+                                                </p>
+                                                <p>
+                                                    I could genuinely go on and on about the beauty of this game and what makes it so perfect, but I believe going into this with an open mind and no spoilers is the way to go.
+                                                </p>
+                                                <p>
+                                                    this is a MUST PLAY for anybody and will be an experience that sticks with you for a while
+                                                </p>
+                                            </article>
+
+                                            <article class="game-entry" id="va11">
+                                                <h3>VA11HALLA</h3>
+
+                                                <div class="meta-strip">
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">GENRE</span>
+                                                        <span class="meta-value">Visual Novel</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">YEAR</span>
+                                                        <span class="meta-value">2016</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">PLATFORM</span>
+                                                        <span class="meta-value">PC</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">DEV/PUB</span>
+                                                        <span class="meta-value">Sukeban Games / PLAYISM</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="game-images">
+                                                    <img src="https://waifubartending.com/Waifu_Abuse_28.png" alt="Va11 img1">
+                                                    <img src="https://assets.nintendo.com/image/upload/q_auto:best/f_auto/dpr_2.0/store/software/switch/70010000016732/daaeb3e7d5558bf49287d114f0cca8339f5c25b19a74f9052012e0b391005642" alt="Va11 img2">
+                                                    <img src="https://cdn.mos.cms.futurecdn.net/U6EA4HFkmBVm2wWNgwQPUA.png" alt="Va11 img3">
+                                                    <img src="https://i.ytimg.com/vi/EXUQdv08yf0/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLBiDhlBWACXq-ogiNHioXzqdSSjhA" alt="Va11 img4">
+                                                </div>
+
+                                                <p>one of my personal favorite games ever.</p>
+                                                <p>
+                                                    va11halla (or VA-11 Hall-A: Cyberpunk Bartender Action) is (as its full legal name suggests) a cyberpunk bartending experience.
+                                                </p>
+                                                <p>
+                                                    it is a cozy visual novel with an emphasis on mixing drinks for patrons to steer the conversation in different ways, thus replacing "dialogue choices" with a drinks menu instead. very clever 10/10 for that alone
+                                                </p>
+                                                <p>
+                                                    every ounce of this game oozes charm, style and personality and every character that walks into the bar has that on FULL DISPLAY
+                                                </p>
+                                                <p>
+                                                    the art is very well done and Japanese pc-98 inspired with a hint of cyberpunk dystopia. the soundtrack (which you get to pick before the start of each shift) is very well done and does a good job of bringing home that "cozy bar" feel
+                                                </p>
+                                                <p>
+                                                    This game is a must-play for those into visual novels or those looking for a cozy experience and to immerse themselves in a new experience.
+                                                </p>
+                                                <p>
+                                                    p.s. this game genuinely changed my outlook on life when I played it at a decently low point in my life and I hope it does the same for you if you seek to play it :)
+                                                </p>
+                                            </article>
+
+                                            <article class="game-entry" id="peri">
+                                                <h3>PERIPETEIA</h3>
+
+                                                <div class="meta-strip">
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">GENRE</span>
+                                                        <span class="meta-value">Immersive Sim</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">YEAR</span>
+                                                        <span class="meta-value">2023</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">PLATFORM</span>
+                                                        <span class="meta-value">PC</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">DEV/PUB</span>
+                                                        <span class="meta-value">Ninth Exodus</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="game-images">
+                                                    <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1437760/ss_402c4d3919d2532c14f40c8782318e2c3f8b55c4.1920x1080.jpg?t=1777217089" alt="peri img1">
+                                                    <img src="https://images.g2a.com/470x276/1x1x0/peripeteia-pc-steam-gift-north-america-i10000510010003/9ac58a77461d437498d6a533" alt="peri img2">
+                                                    <img src="https://img.game8.co/4116363/d59c207e2ace36fbd8b873fcd17331d4.png/show" alt="peri img3">
+                                                    <img src="https://cdn.mos.cms.futurecdn.net/9N4L9RPtzzENXNUo7SCJ8C-1920-80.jpg" alt="peri img4">
+                                                </div>
+
+                                                <p>
+                                                    peripeteia (or simply "Peri" as i will call it here) is a first-and-third-person role-playing stealth game in a dystopian cyberpunk Poland. It is developed and published by Ninth Exodus.
+                                                </p>
+                                                <p>
+                                                    Peri plays similar to an immersive sim like those made around the time of the old DEUS EX games. its a niche genre for a lot of people but I think many people can find fun in it.
+                                                </p>
+                                                <p>
+                                                    there's tarkov-like inventory management (grid-based inventory with ammo and mag rationing) and gunplay combined with RPG elements of finding various ways to complete a level.
+                                                </p>
+                                                <p>
+                                                    one of my favorite aspects is how you can learn and explore levels to go from taking hours to complete them to a mere few minutes. the game allows many ways to solve problems as most of the environment is parkour-able and interactable.
+                                                </p>
+                                                <p>
+                                                    the artistic design is stunning and it nails its dystopian cyberpunk aesthetic perfectly. the music is also full of banger tracks.
+                                                </p>
+                                                <p>
+                                                    my only issue with Peri is that it is in early access currently and it shows. the game has a fair share of bugs and glitches and needs some revamping on the AI interaction, both quests and enemies, but otherwise, there's great potential here.
+                                                </p>
+                                            </article>
+
+                                            <article class="game-entry" id="pica">
+                                                <h3>PICAYUNE DREAMS</h3>
+
+                                                <div class="meta-strip">
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">GENRE</span>
+                                                        <span class="meta-value">Roguelite / Bullet Hell</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">YEAR</span>
+                                                        <span class="meta-value">2023</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">PLATFORM</span>
+                                                        <span class="meta-value">PC</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">DEV/PUB</span>
+                                                        <span class="meta-value">Stepford, Andyland, milkypossum / 2 Left Thumbs</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="game-images">
+                                                    <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2088840/ss_d507019cfbf4f5baac80599705eebc9f341b4532.1920x1080.jpg?t=1765395199" alt="pica img1">
+                                                    <img src="https://gamemaker.io/_next/image?url=https%3A%2F%2Fassets.gamemaker.io%2Fpicayune_dreams_3_701034ef33.jpg&w=3840&q=75" alt="pica img2">
+                                                    <img src="https://i0.wp.com/rogueliker.com/wp-content/uploads/2025/02/pica1.jpg?resize=1024%2C573&ssl=1" alt="pica img3">
+                                                    <img src="https://images.g2a.com/470x276/1x1x0/picayune-dreams-pc-steam-key-global-i10000506946001/46f5d7dd38e84a75a3b9109d" alt="pica img4">
+                                                </div>
+
+                                                <p>
+                                                    Picayune Dreams is a combination of roguelike "upgrade per run" games similar to vampire survivors with bullet-hell gameplay. it is developed by Stepford, Andyland, and milkypossum and published by 2 Left Thumbs.
+                                                </p>
+                                                <p>
+                                                    I'm not going to lie to you, this game is very strange in terms of literally everything but in the best way possible. the game is very psychedelic and will make no sense (narratively) most of the time. HOWEVER, the gameplay loop is very refreshing and addicting. it does more than just be a "vampire survivors clone" in an already pretty saturated market.
+                                                </p>
+                                                <p>
+                                                    the upgrades are fun to try out. the bosses are fun to get good at. the roguelite progression keeps things unique every run and it will demand you get good or keep dying trying.
+                                                </p>
+                                                <p>
+                                                    the visuals in this game are so beautiful and truly special. Andyland did an amazing job delivering a dream-like and glitchy aesthetic and wrapped it up with a nice bow.
+                                                </p>
+                                                <p>
+                                                    the music is so so good, genuinely love listening to this OST.
+                                                </p>
+                                                <p>
+                                                    please try this game if you are looking for a bullethell game to sink some time into.
+                                                </p>
+                                            </article>
+
+                                            <article class="game-entry" id="stu">
+                                                <h3>STUDIO SYSTEM</h3>
+
+                                                <div class="meta-strip">
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">GENRE</span>
+                                                        <span class="meta-value">Survival Horror</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">YEAR</span>
+                                                        <span class="meta-value">2025</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">PLATFORM</span>
+                                                        <span class="meta-value">PC</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">DEV/PUB</span>
+                                                        <span class="meta-value">alreti circle</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="game-images">
+                                                    <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2194790/ss_3654ca59bbcf617e1fc70b20d51ead05b846fdb1.1920x1080.jpg?t=1765821813" alt="stu img1">
+                                                    <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2194790/ss_c602be40aec02f547802cf29890fe0aa6cc5175f.1920x1080.jpg?t=1765821813" alt="stu img2">
+                                                    <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2194790/ss_d0cf0260c0bdc62cc81cd3b744d5dd7a7386a464.1920x1080.jpg?t=1765821813" alt="stu img3">
+                                                    <img src="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2194790/ss_6ccbc8ed4beeedbf5704692d9053985dfa59187a.1920x1080.jpg?t=1765821813" alt="stu img4">
+                                                </div>
+
+                                                <p>
+                                                    Studio System (or better known as Studio System : Guardian Angel) is an interesting take on the fixed-camera survival horror genre. it was developed and published by alreti circle.
+                                                </p>
+                                                <p>
+                                                    this game is mostly for those that don't mind fixed camera perspectives i.e. old resident evil style. during my playthrough of this game, i was immediately hooked on the premise and surrealist nature of the environments and characters. it reminded me very heavily of the 1999 cult classic anime Serial Experiments Lain and i believe that is where most of the inspiration for this game comes from, everything from character interactions to pieces of the soundtrack so bonus points for that :)
+                                                </p>
+                                                <p>
+                                                    the character sprites and 3d models for friends and monsters are also really well done and i enjoyed them a lot as i've never seen models look as unique as this in a game.
+                                                </p>
+                                                <p>
+                                                    now this game isnt without its flaws unfortunately. the gameplay has a bit of a jank to it. nothing too horrible or unplayable but just a *jank* that i could feel. i think this game is worth a fair shot and its also not too long to play through and rewards multiple endings.
+                                                </p>
+                                            </article>
+
+                                            <article class="game-entry" id="dogwood">
+                                                <div class="corrupted-entry">
+                                                    <h3>DOGWOOD</h3>
+
+                                                    <div class="meta-strip">
+                                                        <div class="meta-box">
+                                                            <span class="meta-label">GENRE</span>
+                                                            <span class="meta-value">UNKNOWN</span>
+                                                        </div>
+
+                                                        <div class="meta-box">
+                                                            <span class="meta-label">YEAR</span>
+                                                            <span class="meta-value">UNKNOWN</span>
+                                                        </div>
+
+                                                        <div class="meta-box">
+                                                            <span class="meta-label">PLATFORM</span>
+                                                            <span class="meta-value">UNKNOWN</span>
+                                                        </div>
+
+                                                        <div class="meta-box">
+                                                            <span class="meta-label">DEV/PUB</span>
+                                                            <span class="meta-value">UNKNOWN</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="corrupted-entry-status">
+                                                        &gt; ENTRY CORRUPTED!
+                                                        &gt; NO IMAGES LOCATED
+                                                        &gt; NO EXECUTABLE SIGNATURE
+                                                        &gt; NO EXTERNAL DATABASE MATCH
+                                                        &gt; RECOVERY SOURCE: UNKNOWN
+                                                        &gt; RESTORATION STATUS: INCOMPLETE
+                                                    </div>
+
+                                                    <p class="corrupted-entry-warning">
+                                                        ACCESS DENIED // METADATA RECOVERY IN PROGRESS
+                                                    </p>
+                                                </div>
+                                            </article>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+
+                    <section class="page-panel" id="page-log">
+                        <section class="panel">
+                            <h2 class="panel-title">LOG</h2>
+
+                            <div class="log-accordion">
+                                <button class="log-toggle" id="log1-toggle" type="button">
+                                    [ LOG_1 // FIRST CONTACT!!! ]
+                                </button>
+
+                                <div class="log-panel">
+                                    <div class="log">
+                                        LOG START //
+
+                                        4/13/2026 - current time: 5:04 AM
+
+                                        HELLO! its so nice of you to stop by! welcome to the new and improved CEEPO'S CORNER terminal site! when i promised a renovated site, i wasn't lying. i wanted to create something
+                                        new and fun from scratch as a challenge to myself and something to amaze everybody who was interested in the project from the beginning.
+                                        thank you to everyone who asked me about the site and when it was coming back, it feels almost strange to me to have a piece of myself just uploaded for anyone to see and actually yk care about it and want to
+                                        see it and read it and comment on it. you guys mean the world to me :)
+
+                                        anyways... onto the site stuff and details!
+
+                                        so this page you're currently on and reading from is the LOGS page,
+                                        this is where i'll post any update logs for the site as well as any additional info i feel like jotting down.
+
+                                        the HOME page is the home page... moving on
+                                        the FAVORITES page is the meat of this whole thing so if you haven't stopped by there yet, i'll explain. that page contains a whole bunch of games that i hand-picked and listed for you to view!
+                                        these are all games that i consider "hidden gems" and things that i think everybody should give a fair chance to attempt to play and check out! although there's many many great games out there
+                                        i'd love to speak about here, i limit this site to games that are small projects by indie devs and don't have that much attention on steam. every game on that list deserves some time of your day i promise :)
+                                        and if you don't like it, at least you tried it and that makes me happy by itself!
+                                        onto the last for now, the LINKS page. the links page is for places on the internet i find cool! i'll link some personal indie dev pages so you can follow them and get your foot in the niche
+                                        games door. there's also some places to find me besides here and my insta is linked in there so follow me if you'd like, that'd make me happy :)
+
+                                        anyways, that's all for now! thank you for reading this far, enjoy browsing and stop by every now and again, there might be more for you to see! bye bye!
+
+                                        LOG END //
+                                    </div>
+                                </div>
+
+                                <button class="log-toggle" id="log2-toggle" type="button">
+                                    [ LOG_2 // second contact?? ]
+                                </button>
+
+                                <div class="log-panel">
+                                    <div class="log">
+                                        LOG START //
+
+                                        hi hi again! its currently been close to a month since i began working on this project. i figured its about time to add another entry and speak more about myself as the last log was mostly all about this place.
+
+                                        making a website is easier than i expected it to be but the hardest part for me is keeping the motivation i had going into it. i'm a very difficult person when it comes to sticking to a single project. i tend to get self-critical and think that there's no real point in what i'm creating then just lose all steam when i hit a road block or slight challenge.
+                                        the beginning of making this website, i believed i could have it done within a few days, then that turned to a week, then now turned into nearly a month.
+                                        granted i went a little overboard in making the vibes and secrets (wink) of this place to make it overall more engaging and fun to browse, but the core point still stands. its such a strange feeling i always have that the less time i spend on something, i think of it as worse quality and my soul didn't really go into it, but then place me in a situation like now where it takes me a longer time to create something and suddenly i debate if it was a waste of time or not and if it really mattered.
+                                        well, i guess YOU, dear reader, are the judge of that.
+
+                                        outside of that, life is good.
+                                        there's now a certain special somebody in my life who motivates me to do better, whether she knows it or not.
+                                        everybody in my life keeps me motivated and im happy to have them all. my real-life job is a job and as much as i hate going to work, it pays for my peace of mind and keeps me active so that's good at least.
+                                        its a night shift so it fits my ideal sleep schedule anyways. problem is i don't get to interact or talk with my friends as much as i wish i could so it gets a little lonely at times but they're all still just as important to me as before and i hope they know it.
+
+                                        anyways, this log was more of a personal type. i just kinda typed in a flow state so if it sounds weird then oopsies. glad you stopped by to read all that and thank you :)
+
+
+                                        LOG END //
+                                    </div>
+                                </div>
+
+                                <button class="log-toggle hidden-log" id="log3-toggle" type="button">
+                                    [ NEW ENTRY DETECTED // unauthorized traffic? ]
+                                </button>
+
+                                <div class="log-panel" id="log3-panel">
+                                    <div class="log">
+
+                                        LOG START //
+
+                                        <span id="log3-time">date unavailable - current time: --:--</span>
+
+                                        this log is a bit of an update to something bothering me recently.
+
+                                        there’s still some sort of old relay process attached to the site backend and i thought i removed this shit months ago
+
+
+                                        it keeps attempting outbound connection requests every few hours through an old proxy port and i have no clue what keeps triggering it and the weird part is the requests are actually getting responses back??
+
+                                        i checked the active user registry again and it still only lists:
+
+                                        - ceepo (hi, that's me)
+                                        - joenuts-1
+
+                                        neither of these ping for the relay though so seriously wtf
+
+                                        gonna disable the relay layer temporarily before this turns into a bigger issue
+                                        if the terminal starts acting unstable after this then i know where the problem is coming from.
+
+                                        i'll check utility backend later because i think the issue originates somewhere in the old remote management tools but that's just a guess atp
+
+                                        idfk man im tired of this, seems like im always looking over my shoulder
+
+                                        LOG END //
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+
+                    <section class="page-panel" id="page-links">
+                        <section class="panel">
+                            <h2 class="panel-title">EXTERNAL ROUTES</h2>
+
+                            <p>
+                                &gt; Opening an endpoint will leave the local archive.<br>
+                                &gt; Continue only if you wish to access an external destination.
+                            </p>
+
+                            <div class="contact-links">
+
+                                <a href="https://www.youtube.com/@Juts_JoeNuts"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    [ OPEN CHANNEL://JUTS_JOENUTS ]
+                                </a>
+
+                                <a href="https://open.spotify.com/playlist/2Z84sYU5O3yjAnaZiPpIDa?si=I-37vcuwS9uO-SFv86SHsA"
+                                   target="_blank"
+                                   rel="noopener noreferrer">
+                                    [ OPEN PLAYLIST://SPOTIFY ]
+                                </a>
+
+                            </div>
+
+                            <div class="terminal-output">
+                                <p>&gt; ROUTES AVAILABLE: 02</p>
+                                <p>&gt; CONNECTION STATUS: STABLE</p>
+                                <p>&gt; EXTERNAL ACCESS: ENABLED</p>
+                            </div>
+                        </section>
+                    </section>
+                </main>
+
+                <footer id="page-footer">
+                    END OF TRANSMISSION //
+                </footer>
+            </div>
+        </div>
+
+        <aside class="right-column">
+            <section class="side-window music-window">
+                <div class="window-bar">
+                    <span class="window-title">AUDIO://NOW_PLAYING</span>
+                    <div class="window-controls" aria-hidden="true">
+                        <span class="window-dot"></span>
+                        <span class="window-dot"></span>
+                        <span class="window-dot"></span>
+                    </div>
+                </div>
+
+                <div class="window-content">
+                    <audio id="audio-player" class="audio-player-hidden"></audio>
+
+                    <div class="player-meta">
+                        <p><strong>NOW PLAYING</strong></p>
+                        <p id="now-playing">--</p>
+
+                        <p><strong>STATUS</strong></p>
+                        <p id="player-status">DEVICE OFFLINE</p>
+                        <div class="audio-repair-log" id="audio-repair-log">ERROR: AUDIO INDEX CORRUPTED</div>
+                        <div class="audio-source-meta" id="audio-source-meta">
+                            <p><strong>REMOTE SOURCE</strong></p>
+                            <p>Razz_matazzim</p>
+                            <p><strong>PLAYLIST</strong></p>
+                            <p>RELAY BACKUP // <span id="audio-track-count">0</span> TRACKS</p>
+                        </div>
+
+                        <div class="terminal-player audio-corrupted" id="terminal-player">
+                            <div class="terminal-player-row">
+                                <button class="boot-button player-button" id="prev-track" type="button">[ PREV ]</button>
+                                <button class="boot-button player-button" id="play-pause" type="button">[ PLAY ]</button>
+                                <button class="boot-button player-button" id="next-track" type="button">[ NEXT ]</button>
+                            </div>
+
+                            <div class="terminal-progress-wrap">
+                                <div class="terminal-progress-label">
+                                    <span id="current-time">00:00</span>
+                                    <span id="duration-time">00:00</span>
+                                </div>
+
+                                <div class="ascii-progress-bar"
+                                     id="ascii-progress-bar"
+                                     role="button"
+                                     tabindex="0"
+                                     aria-label="Seek track">[░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░]</div>
+                            </div>
+
+                            <div class="terminal-volume-wrap">
+                                <label for="volume-slider">VOL</label>
+                                <input id="volume-slider" class="terminal-volume" type="range" min="0" max="1" step="0.01" value="1" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="side-window misc-window">
+                <div class="window-bar">
+                    <span class="window-title">MISC://UTILITY</span>
+                    <div class="window-controls" aria-hidden="true">
+                        <span class="window-dot"></span>
+                        <span class="window-dot"></span>
+                        <span class="window-dot"></span>
+                    </div>
+                </div>
+
+                <div class="window-content">
+                    <div class="contact-links utility-links">
+                        <button class="boot-button utility-option active" type="button" data-utility="notes">[ NOTES ]</button>
+                        <button class="boot-button utility-option" type="button" data-utility="status">[ STATUS ]</button>
+                        <button class="boot-button utility-option" type="button" data-utility="settings">[ SETTINGS ]</button>
+                        <button class="boot-button utility-option hidden-utility" id="relay-button" type="button" data-utility="relay">[ RELAY ]</button>
+                    </div>
+
+                    <div class="panel" id="utility-notes">
+                        <p>stuff.</p>
+                    </div>
+
+                    <div class="panel utility-panel-hidden" id="utility-status">
+                        <p>&gt; TERMINAL STATUS: ONLINE</p>
+                        <p>&gt; STORY STATE: <span id="story-state-status">SAVED</span></p>
+                        <p>&gt; RELAY STATUS: <span id="relay-status-indicator">LOCKED</span></p>
+                        <p>&gt; LAST REMOTE USER: <span id="relay-user-indicator">NONE</span></p>
+
+                        <div class="status-control-stack">
+                            <button class="boot-button" id="reboot-button" type="button">[ REBOOT TERMINAL ]</button>
+                            <button class="boot-button warning-button" id="reset-progress-button" type="button">[ RESET PROGRESS ]</button>
+                        </div>
+
+                        <div class="reset-confirmation utility-panel-hidden" id="reboot-confirmation">
+                            <p class="reset-confirmation-text">
+                                &gt; THIS WILL PLAY THE BOOT ANIMATION AGAIN. PROCEED?
+                            </p>
+
+                            <div class="reset-confirmation-actions">
+                                <button class="boot-button warning-button" id="reboot-confirm-yes" type="button">[ YES ]</button>
+                                <button class="boot-button" id="reboot-confirm-no" type="button">[ NO ]</button>
+                            </div>
+                        </div>
+
+                        <div class="reset-confirmation utility-panel-hidden" id="reset-confirmation">
+                            <p class="reset-confirmation-text">
+                                &gt; THIS WILL RESET YOUR PROGRESS. PROCEED?
+                            </p>
+
+                            <div class="reset-confirmation-actions">
+                                <button class="boot-button warning-button" id="reset-progress-yes" type="button">[ YES ]</button>
+                                <button class="boot-button" id="reset-progress-no" type="button">[ NO ]</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel utility-panel-hidden" id="utility-settings">
+                        <p>&gt; INTERFACE SETTINGS</p>
+
+                        <div class="status-control-stack">
+                            <button class="boot-button setting-toggle" id="ui-sound-toggle" type="button">[ UI SOUND: ON ]</button>
+                            <button class="boot-button setting-toggle" id="crt-toggle" type="button">[ CRT FX: ON ]</button>
+                        </div>
+                    </div>
+
+                    <div class="panel utility-panel-hidden" id="utility-relay">
+                        <div id="relay-content">
+                            <p>&gt; REMOTE RELAY STATUS: DISABLED</p>
+                            <p>&gt; EXTERNAL USER: BLOCKED</p>
+                            <p>&gt; RELAY PORT: 88</p>
+                            <p>&gt; ACTION REQUIRED: INITIALIZE RELAY</p>
+
+                            <button class="boot-button" id="initialize-relay-button" type="button">[ INITIALIZE RELAY ]</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <div class="image-viewer" id="image-viewer">
+        <img id="viewer-img" alt="Expanded game image">
+    </div>
+
+    <script>
+        const clock = document.getElementById("clock");
+        const topbarMode = document.getElementById("topbar-mode");
+        const heroSubtitle = document.getElementById("hero-subtitle");
+        const pageFooter = document.getElementById("page-footer");
+        const navButtons = document.querySelectorAll(".nav-page-button");
+        const pagePanels = document.querySelectorAll(".page-panel");
+        const siteShell = document.getElementById("site-shell");
+        const rebootButton = document.getElementById("reboot-button");
+        const resetProgressButton = document.getElementById("reset-progress-button");
+        const resetConfirmation = document.getElementById("reset-confirmation");
+        const resetProgressYes = document.getElementById("reset-progress-yes");
+        const resetProgressNo = document.getElementById("reset-progress-no");
+        const rebootConfirmation = document.getElementById("reboot-confirmation");
+        const rebootConfirmYes = document.getElementById("reboot-confirm-yes");
+        const rebootConfirmNo = document.getElementById("reboot-confirm-no");
+        const storyStateStatus = document.getElementById("story-state-status");
+        const relayStatusIndicator = document.getElementById("relay-status-indicator");
+        const relayUserIndicator = document.getElementById("relay-user-indicator");
+        const uiSoundToggle = document.getElementById("ui-sound-toggle");
+        const crtToggle = document.getElementById("crt-toggle");
+
+        const STORY_STATE_KEY = "ceepoStoryStateV1";
+        const DEFAULT_STORY_STATE = {
+            log1Opened: false,
+            log2Opened: false,
+            hiddenLogUnlocked: false,
+            hiddenLogTimestamp: "",
+            relayUnlocked: false,
+            relayInitialized: false,
+            audioRepaired: false,
+            dogwoodRevealed: false,
+            dogwoodOpened: false,
+            storyComplete: false,
+            currentPage: "home",
+            currentUtility: "notes",
+            uiSoundEnabled: true,
+            crtEnabled: true
+        };
+
+        function loadStoryState() {
+            try {
+                const saved = JSON.parse(localStorage.getItem(STORY_STATE_KEY) || "{}");
+                return { ...DEFAULT_STORY_STATE, ...saved };
+            } catch (error) {
+                console.warn("Could not read saved story state. Starting with defaults.", error);
+                return { ...DEFAULT_STORY_STATE };
+            }
+        }
+
+        let storyState = loadStoryState();
+
+        function saveStoryState(patch = {}) {
+            storyState = { ...storyState, ...patch };
+
+            try {
+                localStorage.setItem(STORY_STATE_KEY, JSON.stringify(storyState));
+            } catch (error) {
+                console.warn("Could not save story state.", error);
+            }
+        }
+
+        function resetCeepoStoryProgress() {
+            localStorage.removeItem(STORY_STATE_KEY);
+            localStorage.removeItem(MUSIC_STATE_KEY);
+            localStorage.removeItem("ceepoBootedPersistent");
+            localStorage.removeItem("ceepoBooted");
+            location.reload();
+        }
+
+        function openResetConfirmation() {
+            if (!resetConfirmation) return;
+
+            closeRebootConfirmation();
+            resetConfirmation.classList.remove("utility-panel-hidden");
+
+            if (storyStateStatus) {
+                storyStateStatus.textContent = "RESET PENDING";
+            }
+
+            if (resetProgressButton) {
+                resetProgressButton.disabled = true;
+            }
+        }
+
+        function closeResetConfirmation() {
+            if (!resetConfirmation) return;
+
+            resetConfirmation.classList.add("utility-panel-hidden");
+
+            if (storyStateStatus) {
+                storyStateStatus.textContent = "SAVED";
+            }
+
+            if (resetProgressButton) {
+                resetProgressButton.disabled = false;
+            }
+        }
+
+        function openRebootConfirmation() {
+            if (!rebootConfirmation) return;
+
+            closeResetConfirmation();
+            rebootConfirmation.classList.remove("utility-panel-hidden");
+
+            if (storyStateStatus) {
+                storyStateStatus.textContent = "REBOOT PENDING";
+            }
+
+            if (rebootButton) {
+                rebootButton.disabled = true;
+            }
+        }
+
+        function closeRebootConfirmation() {
+            if (!rebootConfirmation) return;
+
+            rebootConfirmation.classList.add("utility-panel-hidden");
+
+            if (storyStateStatus) {
+                storyStateStatus.textContent = "SAVED";
+            }
+
+            if (rebootButton) {
+                rebootButton.disabled = false;
+            }
+        }
+
+        window.resetCeepoStoryProgress = resetCeepoStoryProgress;
+
+        const pageMeta = {
+            home: {
+                topbar: "CEEPO'S CORNER // USER MODE",
+                subtitle: "A personal archive terminal.",
+                footer: "END OF TRANSMISSION //"
+            },
+            favorites: {
+                topbar: "CEEPO'S CORNER // FAVORITES ARCHIVE",
+                subtitle: "A running archive of games worth recommending.",
+                footer: "FAVORITES ARCHIVE // SELECT A FILE TO OPEN"
+            },
+            log: {
+                topbar: "CEEPO'S CORNER // LOG ARCHIVE",
+                subtitle: "System notes, updates, and miscellaneous records.",
+                footer: "LOG ARCHIVE // REVIEW COMPLETE"
+            },
+            links: {
+                topbar: "CEEPO'S CORNER // LINK INDEX",
+                subtitle: "External routes and connected endpoints.",
+                footer: "LINK INDEX // STANDING BY"
+            }
+        };
+
+        function updateClock() {
+            const now = new Date();
+            clock.textContent = now.toLocaleTimeString();
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        function showPage(pageId) {
+            pagePanels.forEach(panel => {
+                panel.classList.toggle("active", panel.id === `page-${pageId}`);
+            });
+
+            navButtons.forEach(button => {
+                button.classList.toggle("active", button.dataset.page === pageId);
+            });
+
+            const meta = pageMeta[pageId];
+            if (meta) {
+                topbarMode.textContent = meta.topbar;
+                heroSubtitle.textContent = meta.subtitle;
+                pageFooter.textContent = meta.footer;
+            }
+
+            saveStoryState({ currentPage: pageId });
+        }
+
+        navButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                const pageId = button.dataset.page;
+                showPage(pageId);
+
+                if (pageId === "favorites") {
+                    registerFavoritesVisit();
+                }
+            });
+        });
+
+        const fileNames = {
+            signalis: "SIGNALIS.EXE",
+            va11: "VA11HALLA.EXE",
+            peri: "PERIPETEIA.EXE",
+            pica: "PICAYUNE_DREAMS.EXE",
+            stu: "STUDIO_SYSTEM.EXE",
+            dogwood: "DOGWOOD.EXE"
+        };
+
+        const windowNames = {
+            signalis: "FILE://SIGNALIS",
+            va11: "FILE://VA11HALLA",
+            peri: "FILE://PERIPETEIA",
+            pica: "FILE://PICAYUNE_DREAMS",
+            stu: "FILE://STUDIO_SYSTEM",
+            dogwood: "FILE://DOGWOOD"
+        };
+
+        const tabs = document.querySelectorAll(".game-tab");
+        const entries = document.querySelectorAll(".game-entry");
+        const windowTitle = document.getElementById("window-title");
+        const currentFile = document.getElementById("current-file");
+
+        const favoritesNavButton = document.querySelector('.nav-page-button[data-page="favorites"]');
+        const dogwoodTab = document.getElementById("dogwood-tab");
+        const terminalTopbar = document.querySelector(".topbar");
+
+        let fakeGameRestored = false;
+        let waitingForFavoritesVisit = false;
+        let waitingForFakeGameOpen = false;
+        let fakeGameOpened = false;
+        let favoritesVisitResolver = null;
+        let fakeGameOpenResolver = null;
+
+        function restoreCorruptedFavorite() {
+            if (fakeGameRestored) return;
+            fakeGameRestored = true;
+            waitingForFavoritesVisit = true;
+            saveStoryState({ dogwoodRevealed: true });
+
+            if (dogwoodTab) {
+                dogwoodTab.classList.add("revealed");
+                dogwoodTab.setAttribute("aria-hidden", "false");
+            }
+
+            if (favoritesNavButton) {
+
+                favoritesNavButton.classList.add("favorites-nav-alert");
+            }
+
+            relayTone(170, 0.1, "square", 0.012);
+            setTimeout(() => relayTone(110, 0.16, "triangle", 0.01), 100);
+        }
+
+        function waitForFavoritesVisit() {
+            if (
+                document.getElementById("page-favorites")?.classList.contains("active")
+            ) {
+                waitingForFavoritesVisit = false;
+                return Promise.resolve();
+            }
+
+            waitingForFavoritesVisit = true;
+
+            return new Promise((resolve) => {
+                favoritesVisitResolver = resolve;
+            });
+        }
+
+        function waitForFakeGameOpen() {
+            if (fakeGameOpened) {
+                waitingForFakeGameOpen = false;
+                return Promise.resolve();
+            }
+
+            waitingForFakeGameOpen = true;
+
+            return new Promise((resolve) => {
+                fakeGameOpenResolver = resolve;
+            });
+        }
+
+        function registerFavoritesVisit() {
+            if (favoritesNavButton) {
+                favoritesNavButton.classList.remove("favorites-nav-alert");
+            }
+
+            if (!waitingForFavoritesVisit) return;
+
+            waitingForFavoritesVisit = false;
+
+            if (favoritesVisitResolver) {
+                const resolve = favoritesVisitResolver;
+                favoritesVisitResolver = null;
+                resolve();
+            }
+        }
+
+        function registerFakeGameOpen() {
+            if (!fakeGameRestored || fakeGameOpened) return;
+
+            fakeGameOpened = true;
+            waitingForFakeGameOpen = false;
+            saveStoryState({ dogwoodOpened: true });
+
+            relayTone(95, 0.18, "sawtooth", 0.009);
+            document.body.classList.add("screen-flicker");
+
+            setTimeout(() => {
+                document.body.classList.remove("screen-flicker");
+            }, 140);
+
+            if (fakeGameOpenResolver) {
+                const resolve = fakeGameOpenResolver;
+                fakeGameOpenResolver = null;
+                resolve();
+            }
+        }
+
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", () => {
+                const targetId = tab.dataset.tab;
+
+                tabs.forEach((button) => button.classList.remove("active"));
+                entries.forEach((entry) => entry.classList.remove("active"));
+
+                tab.classList.add("active");
+
+                const targetEntry = document.getElementById(targetId);
+                if (targetEntry) {
+                    targetEntry.classList.add("active");
+                }
+
+                if (targetId === "dogwood") {
+                    registerFakeGameOpen();
+                }
+
+                if (windowTitle && windowNames[targetId]) {
+                    windowTitle.textContent = windowNames[targetId];
+                }
+
+                if (currentFile && fileNames[targetId]) {
+                    currentFile.textContent = `CURRENT FILE: ${fileNames[targetId]}`;
+                }
+            });
+        });
+
+        const viewer = document.getElementById("image-viewer");
+        const viewerImg = document.getElementById("viewer-img");
+
+        document.querySelectorAll(".game-images img").forEach((img) => {
+            img.addEventListener("click", () => {
+                viewerImg.src = img.src;
+                viewerImg.alt = img.alt || "Expanded game image";
+                viewer.classList.add("active");
+            });
+        });
+
+        viewer.addEventListener("click", () => {
+            viewer.classList.remove("active");
+            viewerImg.src = "";
+        });
+
+        const audioPlayer = document.getElementById("audio-player");
+        const nowPlaying = document.getElementById("now-playing");
+        const playerStatus = document.getElementById("player-status");
+        const playPauseButton = document.getElementById("play-pause");
+        const prevTrackButton = document.getElementById("prev-track");
+        const nextTrackButton = document.getElementById("next-track");
+        const asciiProgressBar = document.getElementById("ascii-progress-bar");
+        const currentTimeLabel = document.getElementById("current-time");
+        const durationTimeLabel = document.getElementById("duration-time");
+        const volumeSlider = document.getElementById("volume-slider");
+        const terminalPlayer = document.getElementById("terminal-player");
+        const audioRepairLog = document.getElementById("audio-repair-log");
+        const audioSourceMeta = document.getElementById("audio-source-meta");
+        const audioTrackCount = document.getElementById("audio-track-count");
+
+        const FALLBACK_PLAYLIST = [
+            { src: "music/You.mp3", name: "You" },
+            { src: "music/All That We Perceive.mp3", name: "All That We Perceive" },
+            { src: "music/High.mp3", name: "High" },
+            { src: "music/In The Waiting Line.mp3", name: "In The Waiting Line" }
+        ];
+
+        let playlist = [];
+        let currentTrack = 0;
+        let audioUnlocked = false;
+        let audioRepairStarted = false;
+        let audioGesturePrimed = false;
+        const MUSIC_STATE_KEY = "ceepoMusicStateV1";
+        let pendingMusicRestore = null;
+        let uiSoundEnabled = storyState.uiSoundEnabled !== false;
+        let crtEnabled = storyState.crtEnabled !== false;
+
+        async function loadPlaylistManifest() {
+            try {
+                const response = await fetch("music/playlist.json", { cache: "no-store" });
+                if (!response.ok) throw new Error(`playlist manifest returned ${response.status}`);
+
+                const data = await response.json();
+                const entries = Array.isArray(data) ? data : data.tracks;
+                if (!Array.isArray(entries) || entries.length === 0) {
+                    throw new Error("playlist manifest contains no tracks");
+                }
+
+                playlist = entries.map((entry) => {
+                    if (typeof entry === "string") {
+                        const filename = entry.split("/").pop();
+                        return {
+                            src: entry.startsWith("music/") ? entry : `music/${entry}`,
+                            name: decodeURIComponent(filename).replace(/\.[^.]+$/, "")
+                        };
+                    }
+
+                    return {
+                        src: entry.src.startsWith("music/") ? entry.src : `music/${entry.src}`,
+                        name: entry.name || decodeURIComponent(entry.src.split("/").pop()).replace(/\.[^.]+$/, "")
+                    };
+                });
+            } catch (error) {
+                console.warn("Could not load music/playlist.json; using built-in fallback playlist.", error);
+                playlist = [...FALLBACK_PLAYLIST];
+            }
+
+            if (audioTrackCount) audioTrackCount.textContent = String(playlist.length);
+            prepareLockedAudio();
+            applySavedStoryState();
+        }
+
+        function formatTime(seconds) {
+            if (!Number.isFinite(seconds)) return "00:00";
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+        }
+
+        function renderAsciiProgressBar() {
+            if (!audioPlayer || !asciiProgressBar) return;
+            const totalBars = 32;
+            const duration = audioPlayer.duration || 0;
+            const current = audioPlayer.currentTime || 0;
+            const filledBars = duration > 0 ? Math.round((current / duration) * totalBars) : 0;
+            asciiProgressBar.textContent = "[" + "█".repeat(filledBars) + "░".repeat(totalBars - filledBars) + "]";
+        }
+
+        function updatePlayButton() {
+            if (!playPauseButton || !audioPlayer) return;
+            playPauseButton.textContent = audioPlayer.paused ? "[ PLAY ]" : "[ PAUSE ]";
+        }
+
+        function updateProgressUI() {
+            if (!audioPlayer) return;
+            if (currentTimeLabel) currentTimeLabel.textContent = formatTime(audioPlayer.currentTime || 0);
+            if (durationTimeLabel) durationTimeLabel.textContent = formatTime(audioPlayer.duration || 0);
+            renderAsciiProgressBar();
+        }
+
+        function setStatus(text) {
+            if (playerStatus) playerStatus.textContent = text;
+        }
+
+        function setAudioRepairText(text) {
+            if (audioRepairLog) audioRepairLog.textContent = text;
+        }
+
+        function loadMusicState() {
+            try {
+                return JSON.parse(localStorage.getItem(MUSIC_STATE_KEY) || "{}");
+            } catch (error) {
+                return {};
+            }
+        }
+
+        function saveMusicState() {
+            if (!audioPlayer) return;
+
+            localStorage.setItem(MUSIC_STATE_KEY, JSON.stringify({
+                currentTrack,
+                currentTime: Number.isFinite(audioPlayer.currentTime) ? audioPlayer.currentTime : 0,
+                volume: audioPlayer.volume,
+                wasPlaying: !audioPlayer.paused
+            }));
+        }
+
+        function applyInterfaceSettings() {
+            document.body.classList.toggle("crt-disabled", !crtEnabled);
+
+            if (uiSoundToggle) {
+                uiSoundToggle.textContent = `[ UI SOUND: ${uiSoundEnabled ? "ON" : "OFF"} ]`;
+            }
+
+            if (crtToggle) {
+                crtToggle.textContent = `[ CRT FX: ${crtEnabled ? "ON" : "OFF"} ]`;
+            }
+        }
+
+        function updateRelayStatusDisplay(status, user = "NONE") {
+            if (relayStatusIndicator) relayStatusIndicator.textContent = status;
+            if (relayUserIndicator) relayUserIndicator.textContent = user;
+        }
+
+        function prepareLockedAudio() {
+            setStatus("DEVICE OFFLINE");
+            setAudioRepairText(`ERROR: AUDIO INDEX CORRUPTED\nTRACKS FOUND: 0\nTRACKS ACCESSIBLE: 0`);
+            if (nowPlaying) nowPlaying.textContent = "--";
+            if (terminalPlayer) terminalPlayer.classList.add("audio-corrupted");
+            if (playPauseButton) playPauseButton.disabled = true;
+            if (prevTrackButton) prevTrackButton.disabled = true;
+            if (nextTrackButton) nextTrackButton.disabled = true;
+            if (volumeSlider) volumeSlider.disabled = true;
+            updateProgressUI();
+        }
+
+        function loadTrack(index, shouldAutoplay = false) {
+            if (!audioPlayer || !playlist[index]) return;
+
+            currentTrack = index;
+            const track = playlist[index];
+            audioPlayer.src = track.src;
+            audioPlayer.load();
+
+            if (nowPlaying) nowPlaying.textContent = track.name;
+
+            setStatus("READY");
+            updatePlayButton();
+            updateProgressUI();
+            saveMusicState();
+
+            if (shouldAutoplay) {
+                playCurrentTrack();
+            }
+        }
+
+        async function primeAudioFromUserGesture() {
+            if (audioGesturePrimed || !audioPlayer || playlist.length === 0) return;
+            audioGesturePrimed = true;
+            const previousVolume = audioPlayer.volume;
+            try {
+                audioPlayer.src = playlist[0].src;
+                audioPlayer.volume = 0;
+                await audioPlayer.play();
+                audioPlayer.pause();
+                audioPlayer.currentTime = 0;
+            } catch (error) {
+                console.warn("Audio priming was blocked; the user may need to press PLAY after repair.", error);
+            } finally {
+                audioPlayer.volume = previousVolume;
+            }
+        }
+
+        async function playCurrentTrack() {
+            if (!audioPlayer || !audioUnlocked) return false;
+
+            try {
+                await audioPlayer.play();
+                setStatus("PLAYING");
+                updatePlayButton();
+                saveMusicState();
+                return true;
+            } catch (error) {
+                setStatus("PLAYBACK READY // PRESS PLAY");
+                updatePlayButton();
+
+                if (playPauseButton) {
+                    playPauseButton.classList.add("favorites-nav-alert");
+                }
+
+                return false;
+            }
+        }
+
+        function playNextTrack() {
+            if (!audioUnlocked || playlist.length === 0) return;
+            currentTrack = (currentTrack + 1) % playlist.length;
+            loadTrack(currentTrack, true);
+        }
+
+        function playPrevTrack() {
+            if (!audioUnlocked || playlist.length === 0) return;
+            currentTrack = (currentTrack - 1 + playlist.length) % playlist.length;
+            loadTrack(currentTrack, true);
+        }
+
+        async function scanCorruptedAudioPlayer() {
+            if (audioRepairStarted) return;
+            audioRepairStarted = true;
+
+            const scanSteps = [
+                ["REMOTE USER REQUESTING AUDIO ACCESS...", 900],
+                ["CHECKING AUDIO ARCHIVE...", 950],
+                ["SEARCHING INDEX...", 1050],
+                ["ERROR: INDEX NOT FOUND", 1200],
+                ["ATTEMPTING RECONSTRUCTION...", 950],
+                ["CREATING REPLACEMENT INDEX...", 1050],
+                ["SCANNING RELAY CACHE...", 1100],
+                ["RECOVERED 0 ARCHIVED TRACKS", 1500]
+            ];
+
+            for (const [message, delay] of scanSteps) {
+                setAudioRepairText(message);
+                relayTone(280 + Math.random() * 240, 0.045, "square", 0.006);
+                await relayWait(delay);
+            }
+
+            await relayWait(1000);
+        }
+
+        async function finishAudioRepair() {
+            const uploadSteps = [
+                ["CHECKING REMOTE MACHINE...", 1150],
+                [`REMOTE LIBRARY DETECTED: ${playlist.length} TRACKS`, 1200],
+                ["UPLOADING LOCAL PLAYLIST...", 1100],
+                ["INJECTING METADATA...", 1000],
+                ["BUILDING NEW INDEX...", 1150]
+            ];
+
+            for (const [message, delay] of uploadSteps) {
+                setAudioRepairText(message);
+                relayTone(300 + Math.random() * 260, 0.05, "square", 0.006);
+                await relayWait(delay);
+            }
+
+            for (let i = 0; i < playlist.length; i++) {
+                setAudioRepairText(`TRACK ${String(i + 1).padStart(2, "0")} RESTORED // ${playlist[i].name}`);
+                relayTone(420 + i * 25, 0.055, "triangle", 0.007);
+                await relayWait(620);
+            }
+
+            await relayWait(800);
+
+            audioUnlocked = true;
+            saveStoryState({ audioRepaired: true });
+
+            if (terminalPlayer) terminalPlayer.classList.remove("audio-corrupted");
+            if (playPauseButton) playPauseButton.disabled = false;
+            if (prevTrackButton) prevTrackButton.disabled = false;
+            if (nextTrackButton) nextTrackButton.disabled = false;
+            if (volumeSlider) volumeSlider.disabled = false;
+            if (audioSourceMeta) audioSourceMeta.classList.add("visible");
+            if (audioTrackCount) audioTrackCount.textContent = String(playlist.length);
+
+            setAudioRepairText(`${playlist.length} TRACKS RESTORED\nREMOTE PLAYLIST ACTIVE`);
+            setStatus("READY");
+            currentTrack = 0;
+            loadTrack(currentTrack, false);
+
+            await relayWait(900);
+        }
+
+        if (playPauseButton) {
+            playPauseButton.addEventListener("click", async () => {
+                if (!audioUnlocked || !audioPlayer) return;
+                if (audioPlayer.paused) await playCurrentTrack();
+                else audioPlayer.pause();
+            });
+        }
+
+        if (nextTrackButton) nextTrackButton.addEventListener("click", playNextTrack);
+        if (prevTrackButton) prevTrackButton.addEventListener("click", playPrevTrack);
+
+        if (audioPlayer) {
+            audioPlayer.addEventListener("play", () => {
+                setStatus("PLAYING");
+                updatePlayButton();
+                if (playPauseButton) playPauseButton.classList.remove("favorites-nav-alert");
+                saveMusicState();
+            });
+
+            audioPlayer.addEventListener("pause", () => {
+                if (audioUnlocked) setStatus("PAUSED");
+                updatePlayButton();
+                saveMusicState();
+            });
+
+            audioPlayer.addEventListener("ended", playNextTrack);
+
+            audioPlayer.addEventListener("timeupdate", () => {
+                updateProgressUI();
+                saveMusicState();
+            });
+
+            audioPlayer.addEventListener("loadedmetadata", async () => {
+                updateProgressUI();
+
+                if (pendingMusicRestore) {
+                    const restore = pendingMusicRestore;
+                    pendingMusicRestore = null;
+
+                    audioPlayer.volume = restore.volume;
+                    if (volumeSlider) volumeSlider.value = String(restore.volume);
+
+                    if (Number.isFinite(restore.currentTime)) {
+                        audioPlayer.currentTime = Math.min(
+                            restore.currentTime,
+                            Math.max(0, audioPlayer.duration || restore.currentTime)
+                        );
+                    }
+
+                    updateProgressUI();
+
+                    if (restore.wasPlaying) {
+                        await playCurrentTrack();
+                    } else {
+                        setStatus("READY");
+                    }
+                }
+            });
+            audioPlayer.addEventListener("error", () => {
+                console.error("Audio file failed to load:", audioPlayer.currentSrc);
+                if (audioUnlocked) setStatus("LOAD ERROR");
+            });
+        }
+
+        if (asciiProgressBar) {
+            asciiProgressBar.addEventListener("click", (event) => {
+                if (!audioUnlocked || !audioPlayer || !audioPlayer.duration) return;
+                const rect = asciiProgressBar.getBoundingClientRect();
+                const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+                audioPlayer.currentTime = ratio * audioPlayer.duration;
+            });
+        }
+
+        if (volumeSlider && audioPlayer) {
+            audioPlayer.volume = Number(volumeSlider.value);
+            volumeSlider.addEventListener("input", () => {
+                audioPlayer.volume = Number(volumeSlider.value);
+                saveMusicState();
+            });
+        }
+
+        loadPlaylistManifest();
+
+        const utilityButtons = document.querySelectorAll(".utility-option");
+        const utilityPanels = {
+            notes: document.getElementById("utility-notes"),
+            status: document.getElementById("utility-status"),
+            settings: document.getElementById("utility-settings"),
+            relay: document.getElementById("utility-relay")
+        };
+
+        let activeUtilityName = "notes";
+
+        function showUtility(name) {
+            activeUtilityName = name;
+
+            Object.entries(utilityPanels).forEach(([key, panel]) => {
+                if (panel) {
+                    panel.classList.toggle("utility-panel-hidden", key !== name);
+                }
+            });
+
+            utilityButtons.forEach(button => {
+                button.classList.toggle("active", button.dataset.utility === name);
+            });
+
+            if (name !== "relay") {
+                setRelayTyping("");
+            }
+
+            if (name !== "status") {
+                closeResetConfirmation();
+                closeRebootConfirmation();
+            }
+
+            saveStoryState({ currentUtility: name });
+        }
+
+        utilityButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                const utilityName = button.dataset.utility;
+                showUtility(utilityName);
+
+                if (utilityName === "relay") {
+                    const relayInput = document.getElementById("relay-chat-input");
+
+                    if (
+                        relayInput &&
+                        !relayInput.disabled &&
+                        relayInput.classList.contains("relay-input-active")
+                    ) {
+                        requestAnimationFrame(() => {
+                            relayInput.focus({ preventScroll: true });
+                            keepRelayInputEndVisible(relayInput);
+                        });
+                    }
+                }
+            });
+        });
+
+        const logToggles = document.querySelectorAll(".log-toggle");
+        const log3Toggle = document.getElementById("log3-toggle");
+        const log3Time = document.getElementById("log3-time");
+        const relayButton = document.getElementById("relay-button");
+        const initializeRelayButton = document.getElementById("initialize-relay-button");
+
+        let relayUnlocked = false;
+
+        let log1Opened = false;
+        let log2Opened = false;
+        let hiddenLogUnlocked = false;
+
+        function setHiddenLogTime() {
+            if (!log3Time) return;
+
+            const now = new Date();
+            const dateText = now.toLocaleDateString();
+            const timeText = now.toLocaleTimeString();
+
+            const timestamp = `${dateText} - current time: ${timeText}`;
+            log3Time.textContent = timestamp;
+            saveStoryState({ hiddenLogTimestamp: timestamp });
+        }
+
+        function revealHiddenLog() {
+            if (hiddenLogUnlocked) return;
+
+            hiddenLogUnlocked = true;
+            saveStoryState({ hiddenLogUnlocked: true });
+            setHiddenLogTime();
+
+            document.body.classList.add("screen-flicker");
+
+            setTimeout(() => {
+                document.body.classList.remove("screen-flicker");
+
+                if (log3Toggle) {
+                    log3Toggle.classList.add("revealed");
+                }
+
+                const audioContext = typeof getUIAudioContext === "function" ? getUIAudioContext() : null;
+
+                if (audioContext && audioContext.state === "running" && typeof playBootTone === "function") {
+                    playBootTone(audioContext, 180, 0.08, "square", 0.02);
+
+                    setTimeout(() => {
+                        playBootTone(audioContext, 120, 0.12, "triangle", 0.018);
+                    }, 70);
+                }
+            }, 120);
+        }
+
+        function checkHiddenLogUnlock() {
+            if (hiddenLogUnlocked) return;
+
+            if (log1Opened && log2Opened) {
+                revealHiddenLog();
+            }
+        }
+
+        const RELAY_IP_TARGET = "192.168.88.14";
+        const RELAY_USER_TARGET = "Razz_matazzim";
+        let relayInitialized = false;
+        let relayConnecting = false;
+
+        function relayTone(frequency = 420, duration = 0.04, type = "square", volume = 0.008) {
+            if (!uiSoundEnabled) return;
+
+            const ctx = typeof getUIAudioContext === "function" ? getUIAudioContext() : null;
+            if (!ctx || ctx.state !== "running" || typeof playBootTone !== "function") return;
+            playBootTone(ctx, frequency, duration, type, volume);
+        }
+
+
+        function playBrowseClickSound(target) {
+            if (!uiSoundEnabled) return;
+
+            const ctx = typeof getUIAudioContext === "function" ? getUIAudioContext() : null;
+            if (!ctx || ctx.state !== "running" || typeof playBootTone !== "function") return;
+
+            let frequency = 520;
+            let duration = 0.035;
+            let type = "square";
+            let volume = 0.006;
+
+            if (target.matches(".nav-page-button")) {
+                frequency = 620;
+                duration = 0.045;
+            } else if (target.matches(".utility-option")) {
+                frequency = 560;
+                duration = 0.04;
+            } else if (target.matches(".game-tab")) {
+                frequency = 470;
+                duration = 0.04;
+                type = "triangle";
+            } else if (target.matches(".log-toggle")) {
+                frequency = 430;
+                duration = 0.045;
+                type = "triangle";
+            } else if (target.matches(".player-button, #play-pause, #prev-track, #next-track")) {
+                frequency = 700;
+                duration = 0.035;
+            } else if (target.matches(".setting-toggle")) {
+                frequency = 580;
+                duration = 0.04;
+            } else if (target.matches(".boot-button")) {
+                frequency = 540;
+                duration = 0.04;
+            }
+
+            playBootTone(ctx, frequency, duration, type, volume);
+        }
+
+        function revealRelayUtility() {
+            if (relayUnlocked) return;
+            relayUnlocked = true;
+            saveStoryState({ relayUnlocked: true });
+
+            if (relayButton) {
+                relayButton.classList.add("revealed");
+            }
+        }
+
+        function setRelayActiveField(input, active) {
+            if (!input) return;
+            input.classList.toggle("relay-input-active", active);
+            if (active) {
+                requestAnimationFrame(() => input.focus());
+            }
+        }
+
+        function bindScriptedRelayInput(input, target, options = {}) {
+            if (!input) return;
+
+            const onFilled = typeof options.onFilled === "function" ? options.onFilled : null;
+            const onEnter = typeof options.onEnter === "function" ? options.onEnter : null;
+            let filledHandled = input.value === target;
+
+            input.addEventListener("beforeinput", (event) => event.preventDefault());
+            input.addEventListener("paste", (event) => event.preventDefault());
+            input.addEventListener("drop", (event) => event.preventDefault());
+            input.addEventListener("contextmenu", (event) => event.preventDefault());
+
+            input.addEventListener("keydown", async (event) => {
+                if (input.disabled || input.readOnly || relayConnecting) {
+                    event.preventDefault();
+                    return;
+                }
+
+                if (event.key === "Enter") {
+                    event.preventDefault();
+
+                    if (input.value === target && onEnter) {
+                        await ensureUIAudioReady();
+                        relayTone(720, 0.05, "triangle", 0.01);
+                        onEnter();
+                    }
+                    return;
+                }
+
+                if (event.key === "Tab") {
+                    event.preventDefault();
+                    return;
+                }
+
+                if (event.ctrlKey || event.metaKey || event.altKey) {
+                    event.preventDefault();
+                    return;
+                }
+
+                event.preventDefault();
+
+                if (event.key.length === 1 && input.value.length < target.length) {
+                    await ensureUIAudioReady();
+                    input.value += target[input.value.length];
+                    relayTone(360 + (input.value.length % 5) * 22, 0.022, "square", 0.006);
+
+                    if (input.value === target && !filledHandled) {
+                        filledHandled = true;
+
+                        if (onFilled) {
+                            relayTone(680, 0.055, "triangle", 0.009);
+                            onFilled();
+                        }
+                    }
+                }
+            });
+        }
+
+        function showRelaySearchForm() {
+            if (relayInitialized) return;
+            relayInitialized = true;
+            saveStoryState({ relayInitialized: true });
+
+            const relayContent = document.getElementById("relay-content");
+            if (!relayContent) return;
+
+            relayContent.innerHTML = `
+                            <div class="relay-stage">
+                                <p>&gt; REMOTE RELAY STATUS: INITIALIZED</p>
+                                <p>&gt; PORT 88 HANDSHAKE ........ OK</p>
+                                <p>&gt; TARGET RESOLUTION REQUIRED</p>
+
+                                <div class="relay-field">
+                                    <label class="relay-label" for="relay-ip-input">TARGET IP</label>
+                                    <input class="relay-input relay-input-active" id="relay-ip-input" type="text" autocomplete="off" spellcheck="false" aria-describedby="relay-instruction" />
+                                </div>
+
+                                <div class="relay-field">
+                                    <label class="relay-label" for="relay-user-input">USERNAME SEARCH</label>
+                                    <input class="relay-input" id="relay-user-input" type="text" autocomplete="off" spellcheck="false" readonly />
+                                </div>
+
+                                <p class="relay-hint" id="relay-instruction">&gt; TYPE TARGET IP, THEN USERNAME // PRESS ENTER WHEN COMPLETE</p>
+                                <p class="relay-status-line" id="relay-search-status"></p>
+                                <button class="boot-button" id="relay-search-button" type="button">[ SEARCH NODE ]</button>
+                            </div>
+                        `;
+
+            const ipInput = document.getElementById("relay-ip-input");
+            const userInput = document.getElementById("relay-user-input");
+            const searchButton = document.getElementById("relay-search-button");
+            const searchStatus = document.getElementById("relay-search-status");
+
+            function advanceToUsername() {
+                if (!ipInput || !userInput || ipInput.value !== RELAY_IP_TARGET) return;
+
+                ipInput.readOnly = true;
+                setRelayActiveField(ipInput, false);
+
+                userInput.readOnly = false;
+                setRelayActiveField(userInput, true);
+                userInput.scrollIntoView({ block: "nearest", behavior: "smooth" });
+
+                if (searchStatus) {
+                    searchStatus.textContent = "> IP RESOLVED // TYPE USERNAME SEARCH";
+                }
+            }
+
+            function markUsernameReady() {
+                if (!userInput || userInput.value !== RELAY_USER_TARGET) return;
+
+                setRelayActiveField(userInput, true);
+
+                if (searchStatus) {
+                    searchStatus.textContent = "> USER LOCATED // PRESS ENTER TO CONNECT";
+                }
+            }
+
+            function submitRelaySearch() {
+                if (!ipInput || !userInput) return;
+
+                if (ipInput.value !== RELAY_IP_TARGET) {
+                    setRelayActiveField(ipInput, true);
+                    if (searchStatus) searchStatus.textContent = "> TARGET IP INCOMPLETE";
+                    return;
+                }
+
+                if (userInput.value !== RELAY_USER_TARGET) {
+                    if (!ipInput.readOnly) advanceToUsername();
+                    setRelayActiveField(userInput, true);
+                    if (searchStatus) searchStatus.textContent = "> USERNAME SEARCH INCOMPLETE";
+                    return;
+                }
+
+                primeAudioFromUserGesture();
+                beginRelayConnection();
+            }
+
+            bindScriptedRelayInput(ipInput, RELAY_IP_TARGET, {
+                onFilled: advanceToUsername
+            });
+
+            bindScriptedRelayInput(userInput, RELAY_USER_TARGET, {
+                onFilled: markUsernameReady,
+                onEnter: submitRelaySearch
+            });
+
+            ipInput.addEventListener("click", () => {
+                if (!ipInput.readOnly) setRelayActiveField(ipInput, true);
+            });
+
+            userInput.addEventListener("click", () => {
+                if (userInput.readOnly) {
+                    setRelayActiveField(ipInput, true);
+                    if (searchStatus) searchStatus.textContent = "> COMPLETE TARGET IP FIRST";
+                    return;
+                }
+                setRelayActiveField(userInput, true);
+            });
+
+            if (searchButton) {
+                searchButton.addEventListener("click", async () => {
+                    await ensureUIAudioReady();
+                    submitRelaySearch();
+                });
+            }
+
+            ipInput.readOnly = false;
+            userInput.readOnly = true;
+            setRelayActiveField(ipInput, true);
+            requestAnimationFrame(() => ipInput.focus({ preventScroll: true }));
+        }
+
+        function relayWait(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        function renderRelayProgress(progress) {
+            const progressElement = document.getElementById("relay-connection-progress");
+            if (!progressElement) return;
+
+            const totalBars = 24;
+            const safeProgress = Math.max(0, Math.min(100, progress));
+            const filled = Math.round((safeProgress / 100) * totalBars);
+            progressElement.textContent =
+                "[" + "█".repeat(filled) + "░".repeat(totalBars - filled) + "] " +
+                String(safeProgress).padStart(3, "0") + "%";
+        }
+
+        function appendRelaySequenceLine(text, className = "") {
+            const sequenceLog = document.getElementById("relay-sequence-log");
+            if (!sequenceLog) return;
+
+            const line = document.createElement("p");
+            line.className = `relay-sequence-line ${className}`.trim();
+            line.textContent = `> ${text}`;
+            sequenceLog.appendChild(line);
+            sequenceLog.scrollTop = sequenceLog.scrollHeight;
+        }
+
+        async function beginRelayConnection() {
+            if (relayConnecting) return;
+            relayConnecting = true;
+
+            await ensureUIAudioReady();
+
+            const relayContent = document.getElementById("relay-content");
+            if (!relayContent) {
+                relayConnecting = false;
+                return;
+            }
+
+            relayContent.innerHTML = `
+                            <div class="relay-stage">
+                                <p>&gt; TARGET IP: ${RELAY_IP_TARGET}</p>
+                                <p>&gt; USER MATCH: ${RELAY_USER_TARGET}</p>
+                                <div class="relay-sequence-log" id="relay-sequence-log" aria-live="polite"></div>
+                                <div class="relay-ascii-progress" id="relay-connection-progress">[░░░░░░░░░░░░░░░░░░░░░░░░] 000%</div>
+                                <p class="relay-status-line">&gt; CONNECTION PROCESS ACTIVE<span class="relay-wait-cursor">█</span></p>
+                            </div>
+                        `;
+
+            const connectionSteps = [
+                { text: "SCANNING SUBNET 192.168.88.0/24...", progress: 12, delay: 720, tone: 260 },
+                { text: "HOST 192.168.88.14 DETECTED", progress: 27, delay: 650, tone: 320, success: true },
+                { text: "QUERYING USER REGISTRY...", progress: 41, delay: 760, tone: 350 },
+                { text: "TEMP_USER Razz_matazzim CREATED", progress: 55, delay: 620, tone: 420, success: true },
+                { text: "NEGOTIATING PORT 88 HANDSHAKE...", progress: 69, delay: 880, tone: 460 },
+                { text: "ENCRYPTION KEY EXCHANGE ACCEPTED", progress: 82, delay: 720, tone: 540, success: true },
+                { text: "OPENING SECURE RELAY CHANNEL...", progress: 94, delay: 900, tone: 620 },
+                { text: "CONNECTION ESTABLISHED", progress: 100, delay: 650, tone: 820, success: true }
+            ];
+
+            for (const step of connectionSteps) {
+                appendRelaySequenceLine(step.text, step.success ? "success" : "");
+                renderRelayProgress(step.progress);
+                relayTone(step.tone, step.success ? 0.09 : 0.055, step.success ? "triangle" : "square", 0.009);
+                await relayWait(step.delay);
+            }
+
+            await relayWait(500);
+            openRelayChat();
+        }
+
+        const relayDialogue = [
+            { speaker: "R", text: "hello hello again" },
+            { speaker: "R", text: "i see u got a relay to work, very good stuff" },
+            { speaker: "R", text: "putting what i taught u to good use, im proud :)" },
+            { speaker: "J", text: "There’s not as much as I expected in here…" },
+            { speaker: "R", text: "what do u mean?" },
+            { speaker: "J", text: "Like, there’s only a few tabs and some logs and whatnot." },
+            { speaker: "R", text: "uhhh" },
+            { speaker: "R", text: "what?" },
+            { speaker: "R", text: "are u not seeing all this metadata n corrupted shit?" },
+            { speaker: "J", text: "No? Besides the audio player, everything is fine enough…" },
+            { speaker: "R", text: "hmmm that’s VERY interesting" },
+            { speaker: "R", text: "guess me and u are in two different layers here" },
+            { speaker: "R", text: "okay okay u mentioned the audio player" },
+            { speaker: "R", text: "this is a good chance to test smth" },
+            { speaker: "R", text: "i can try and fix it" },
+            { speaker: "R", text: "let’s see here..." },
+            { action: "SCAN_AUDIO" },
+            { speaker: "R", text: "yeah i figured...", pauseAfter: 1400 },
+            { speaker: "R", text: "OH good news", pauseAfter: 850 },
+            { speaker: "R", text: "i found my own library", pauseAfter: 850 },
+            { speaker: "R", text: "man theres some bangers on here", pauseAfter: 1100 },
+            { speaker: "R", text: "uploading mine for now, hope u don't mind" },
+            { action: "UPLOAD_AUDIO" },
+            { speaker: "R", text: "nearly there", pauseAfter: 1100 },
+            { action: "WAIT_FOR_REPAIR" },
+            { speaker: "R", text: "okay" },
+            { speaker: "R", text: "should be working now" },
+            { speaker: "R", text: "they're just my backups, whatever used to be here is gone" },
+            { speaker: "J", text: "You uploaded your own music?" },
+            { speaker: "R", text: "yeah" },
+            { speaker: "R", text: "better than silence :)" },
+            { speaker: "R", text: "try track 1" },
+            { action: "AUTO_PLAY" },
+            { speaker: "R", text: "ahhh much much better", pauseAfter: 10000 },
+            { speaker: "R", text: "hold up just had a thought", pauseAfter: 900 },
+            { speaker: "R", text: "if i could repair that..." },
+            { speaker: "R", text: "i might be able to restore another corrupted entry", pauseAfter: 1100 },
+            { speaker: "R", text: "gimme a sec" },
+            { action: "RESTORE_FAKE_GAME" },
+            { speaker: "R", text: "???", pauseAfter: 700 },
+            { speaker: "R", text: "do me a favor and click favorites", pauseAfter: 500 },
+            { action: "WAIT_FOR_FAVORITES" },
+            { action: "WAIT_FOR_FAKE_GAME" },
+            { speaker: "R", text: "...", pauseAfter: 1600 },
+            { speaker: "R", text: "hold up" },
+            { speaker: "R", text: "okay i know i said i could restore something but" },
+            { speaker: "R", text: "that wasn't me i promise you" },
+            { speaker: "J", text: "What do you mean?" },
+            { speaker: "R", text: "exactly as it sounds dude." },
+            { speaker: "R", text: "i DID NOT do that." },
+            { speaker: "R", text: "are we sure this game even exists?" },
+            { speaker: "R", text: "i've never heard of it" },
+            { speaker: "J", text: "I haven't either." },
+            { speaker: "R", text: "don't click anything else yet" },
+            { speaker: "R", text: "i wanna think about this for a second" },
+            { speaker: "J", text: "Why? What's wrong?" },
+            { speaker: "R", text: "dude i'm freaking out" },
+            { speaker: "R", text: "there's something going on here" },
+            { speaker: "R", text: "i'll have to get back to you, i NEED to go", pauseAfter: 500 },
+            { action: "CLIFFHANGER_DISCONNECT" }
+        ];
+
+        let relayDialogueIndex = 0;
+        let relayUserTarget = "";
+        let relayUserTyped = 0;
+        let relayDialogueBusy = false;
+        let audioRepairPromise = null;
+
+        function appendRelayChatMessage(name, text, isUser = false) {
+            const log = document.getElementById("relay-chat-log");
+            if (!log) return;
+            const row = document.createElement("p");
+            const isSystem = name === "SYSTEM";
+            row.className = `relay-chat-message${isUser ? " user" : ""}${isSystem ? " system" : ""}`;
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "relay-chat-name";
+            nameSpan.textContent = `${name}:`;
+            row.appendChild(nameSpan);
+            row.appendChild(document.createTextNode(` ${text}`));
+            log.appendChild(row);
+            log.scrollTop = log.scrollHeight;
+            relayTone(isUser ? 520 : 380, 0.045, "square", 0.006);
+        }
+
+        function setRelayTyping(text = "") {
+            const typing = document.getElementById("relay-chat-typing");
+            if (typing) typing.textContent = text;
+        }
+
+        function isRelayUtilityVisible() {
+            const relayPanel = document.getElementById("utility-relay");
+
+            return Boolean(
+                activeUtilityName === "relay" &&
+                relayPanel &&
+                !relayPanel.classList.contains("utility-panel-hidden")
+            );
+        }
+
+        function waitForRelayUtilityVisible() {
+            if (isRelayUtilityVisible()) {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve) => {
+                const checkVisibility = () => {
+                    if (isRelayUtilityVisible()) {
+                        resolve();
+                        return;
+                    }
+
+                    setTimeout(checkVisibility, 80);
+                };
+
+                checkVisibility();
+            });
+        }
+
+        async function relayDialogueWait(milliseconds, onResume = null) {
+            let remaining = Math.max(0, milliseconds);
+            let lastTick = performance.now();
+
+            while (remaining > 0) {
+                if (!isRelayUtilityVisible()) {
+                    setRelayTyping("");
+                    await waitForRelayUtilityVisible();
+                    lastTick = performance.now();
+
+                    if (typeof onResume === "function") {
+                        onResume();
+                    }
+                }
+
+                const slice = Math.min(80, remaining);
+                await relayWait(slice);
+
+                if (isRelayUtilityVisible()) {
+                    const now = performance.now();
+                    remaining -= Math.max(0, now - lastTick);
+                    lastTick = now;
+                } else {
+                    lastTick = performance.now();
+                }
+            }
+        }
+
+        function keepRelayInputEndVisible(input) {
+            if (!input) return;
+
+            const end = input.value.length;
+
+            try {
+                input.setSelectionRange(end, end);
+            } catch (error) {
+            }
+
+            input.scrollLeft = input.scrollWidth;
+        }
+
+        function configureRelayUserInput(text) {
+            const input = document.getElementById("relay-chat-input");
+            const send = document.getElementById("relay-chat-send");
+            const inputRow = input ? input.closest(".relay-chat-input-row") : null;
+            if (!input || !send) return;
+            relayUserTarget = text;
+            relayUserTyped = 0;
+            input.value = "";
+            input.disabled = false;
+            input.readOnly = false;
+            input.placeholder = "type response...";
+            input.classList.add("relay-input-active");
+
+            if (inputRow) {
+                inputRow.classList.add("user-turn");
+            }
+
+            send.disabled = true;
+
+            requestAnimationFrame(() => {
+                input.focus({ preventScroll: true });
+                keepRelayInputEndVisible(input);
+            });
+        }
+
+        async function runRelayDialogue() {
+            if (relayDialogueBusy) return;
+            relayDialogueBusy = true;
+
+            while (relayDialogueIndex < relayDialogue.length) {
+                const step = relayDialogue[relayDialogueIndex];
+
+                if (step.speaker === "J") {
+                    await waitForRelayUtilityVisible();
+                    configureRelayUserInput(step.text);
+                    relayDialogueBusy = false;
+                    return;
+                }
+
+                if (step.action === "SCAN_AUDIO") {
+                    await scanCorruptedAudioPlayer();
+                    relayDialogueIndex++;
+                    continue;
+                }
+
+                if (step.action === "UPLOAD_AUDIO") {
+                    audioRepairPromise = finishAudioRepair();
+                    relayDialogueIndex++;
+                    continue;
+                }
+
+                if (step.action === "WAIT_FOR_REPAIR") {
+                    if (audioRepairPromise) await audioRepairPromise;
+                    relayDialogueIndex++;
+                    continue;
+                }
+
+                if (step.action === "AUTO_PLAY") {
+                    await relayDialogueWait(700);
+                    if (playPauseButton) playPauseButton.classList.add("active");
+                    await playCurrentTrack();
+                    setTimeout(() => playPauseButton && playPauseButton.classList.remove("active"), 250);
+                    relayDialogueIndex++;
+                    continue;
+                }
+
+                if (step.action === "RESTORE_FAKE_GAME") {
+                    setRelayTyping("");
+                    await relayDialogueWait(1000);
+
+                    if (terminalTopbar) {
+                        terminalTopbar.classList.add("intrusion-warning");
+                    }
+
+                    if (topbarMode) {
+                        topbarMode.textContent = "CEEPO'S CORNER // EXTERNAL WRITE DETECTED";
+                    }
+
+                    relayTone(145, 0.12, "square", 0.011);
+                    await relayDialogueWait(1500);
+
+                    if (topbarMode) {
+                        topbarMode.textContent = "CEEPO'S CORNER // UNKNOWN USER WRITE";
+                    }
+
+                    relayTone(95, 0.18, "sawtooth", 0.01);
+                    await relayDialogueWait(1800);
+
+                    restoreCorruptedFavorite();
+
+                    if (topbarMode) {
+                        topbarMode.textContent = "CEEPO'S CORNER // WRITE COMPLETE";
+                    }
+
+                    await relayDialogueWait(1000);
+
+                    if (terminalTopbar) {
+                        terminalTopbar.classList.remove("intrusion-warning");
+                    }
+
+                    if (topbarMode) {
+                        topbarMode.textContent = pageMeta.home.topbar;
+                    }
+
+                    relayDialogueIndex++;
+                    continue;
+                }
+
+                if (step.action === "WAIT_FOR_FAVORITES") {
+                    await waitForFavoritesVisit();
+                    relayDialogueIndex++;
+                    continue;
+                }
+
+                if (step.action === "WAIT_FOR_FAKE_GAME") {
+                    await waitForFakeGameOpen();
+                    relayDialogueIndex++;
+                    continue;
+                }
+
+                if (step.action === "CLIFFHANGER_DISCONNECT") {
+                    await relayDialogueWait(900);
+                    saveStoryState({
+                        storyComplete: true,
+                        dogwoodRevealed: true,
+                        dogwoodOpened: true,
+                        audioRepaired: true,
+                        relayUnlocked: true,
+                        hiddenLogUnlocked: true
+                    });
+
+                    setRelayTyping("");
+                    appendRelayChatMessage("SYSTEM", "REMOTE USER LOST", false);
+
+                    const dot = document.querySelector(".relay-chat-dot");
+                    const status = document.querySelector(".relay-chat-status-text");
+                    const chatInput = document.getElementById("relay-chat-input");
+                    const chatSend = document.getElementById("relay-chat-send");
+
+                    if (dot) {
+                        dot.style.background = "transparent";
+                        dot.style.boxShadow = "none";
+                    }
+
+                    if (status) {
+                        status.textContent = "DISCONNECTED";
+                    }
+
+                    updateRelayStatusDisplay("DISCONNECTED", "Razz_matazzim");
+
+                    if (chatInput) {
+                        chatInput.disabled = true;
+                        chatInput.classList.remove("relay-input-active");
+                        chatInput.placeholder = "relay connection lost";
+                    }
+
+                    if (chatSend) {
+                        chatSend.disabled = true;
+                    }
+
+                    relayTone(120, 0.16, "sawtooth", 0.012);
+                    setTimeout(() => relayTone(70, 0.24, "sine", 0.01), 130);
+
+                    relayDialogueIndex++;
+                    relayDialogueBusy = false;
+                    return;
+                }
+
+                await waitForRelayUtilityVisible();
+                setRelayTyping("Razz_matazzim is typing...");
+
+
+                const typingDelay = Math.max(
+                    750,
+                    Math.min(4200, 500 + step.text.length * 52)
+                );
+
+                await relayDialogueWait(
+                    typingDelay,
+                    () => setRelayTyping("Razz_matazzim is typing...")
+                );
+
+                await waitForRelayUtilityVisible();
+                setRelayTyping("");
+                appendRelayChatMessage("Razz_matazzim", step.text, false);
+                relayDialogueIndex++;
+
+
+                const readingPause = Number.isFinite(step.pauseAfter)
+                    ? step.pauseAfter
+                    : Math.max(500, Math.min(1700, 300 + step.text.length * 18));
+
+                await relayDialogueWait(readingPause);
+            }
+
+            relayDialogueBusy = false;
+            const input = document.getElementById("relay-chat-input");
+            if (input) {
+                input.disabled = true;
+                input.placeholder = "dialogue sequence complete";
+                input.classList.remove("relay-input-active");
+
+                const inputRow = input.closest(".relay-chat-input-row");
+                if (inputRow) {
+                    inputRow.classList.remove("user-turn");
+                }
+            }
+        }
+
+        function sendRelayUserMessage() {
+            const input = document.getElementById("relay-chat-input");
+            const send = document.getElementById("relay-chat-send");
+            if (!input || input.value !== relayUserTarget) return;
+            appendRelayChatMessage("joenuts-1", relayUserTarget, true);
+            input.value = "";
+            input.disabled = true;
+            input.classList.remove("relay-input-active");
+
+            const inputRow = input.closest(".relay-chat-input-row");
+            if (inputRow) {
+                inputRow.classList.remove("user-turn");
+            }
+
+            if (send) send.disabled = true;
+            relayDialogueIndex++;
+            runRelayDialogue();
+        }
+
+        function bindRelayDialogueInput() {
+            const input = document.getElementById("relay-chat-input");
+            const send = document.getElementById("relay-chat-send");
+            if (!input || !send) return;
+
+            input.addEventListener("keydown", (event) => {
+                if (input.disabled) return;
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    sendRelayUserMessage();
+                    return;
+                }
+                if (event.ctrlKey || event.metaKey || event.altKey) {
+                    event.preventDefault();
+                    return;
+                }
+                if (event.key.length === 1) {
+                    event.preventDefault();
+                    if (relayUserTyped < relayUserTarget.length) {
+                        relayUserTyped++;
+                        input.value = relayUserTarget.slice(0, relayUserTyped);
+                        keepRelayInputEndVisible(input);
+                        relayTone(480 + (relayUserTyped % 5) * 18, 0.025, "square", 0.004);
+                    }
+                    send.disabled = input.value !== relayUserTarget;
+                } else {
+                    event.preventDefault();
+                }
+            });
+
+            ["paste", "drop", "beforeinput", "contextmenu"].forEach((type) => {
+                input.addEventListener(type, (event) => event.preventDefault());
+            });
+
+            send.addEventListener("click", sendRelayUserMessage);
+        }
+
+        function openRelayChat() {
+            const relayContent = document.getElementById("relay-content");
+            if (!relayContent) return;
+
+            relayContent.innerHTML = `
+                            <div class="relay-chat">
+                                <div class="relay-chat-header">
+                                    <span>RELAY CHAT://Razz_matazzim</span>
+                                    <span class="relay-chat-status">
+                                        <span class="relay-chat-dot"></span>
+                                        <span class="relay-chat-status-text">CONNECTED</span>
+                                    </span>
+                                </div>
+                                <div class="relay-chat-log" id="relay-chat-log">
+                                    <div class="relay-chat-system">&gt; SECURE RELAY ESTABLISHED</div>
+                                    <div class="relay-chat-system">&gt; USER Razz_matazzim CONNECTED</div>
+                                </div>
+                                <div class="relay-chat-typing" id="relay-chat-typing"></div>
+                                <div class="relay-chat-input-row">
+                                    <input class="relay-chat-input" id="relay-chat-input" type="text" placeholder="awaiting incoming transmission..." disabled />
+                                    <button class="boot-button" id="relay-chat-send" type="button" disabled>[ SEND ]</button>
+                                </div>
+                            </div>
+                        `;
+
+            updateRelayStatusDisplay("CONNECTED", "Razz_matazzim");
+            relayDialogueIndex = 0;
+            bindRelayDialogueInput();
+            relayTone(620, 0.08, "square", 0.012);
+            setTimeout(() => relayTone(840, 0.12, "sine", 0.01), 80);
+            setTimeout(runRelayDialogue, 650);
+        }
+
+        if (initializeRelayButton) {
+            initializeRelayButton.addEventListener("click", async () => {
+                await ensureUIAudioReady();
+                showRelaySearchForm();
+            }, { once: true });
+        }
+
+        logToggles.forEach((toggle) => {
+            toggle.addEventListener("click", () => {
+                if (toggle.id === "log1-toggle") {
+                    log1Opened = true;
+                    saveStoryState({ log1Opened: true });
+                }
+
+                if (toggle.id === "log2-toggle") {
+                    log2Opened = true;
+                    saveStoryState({ log2Opened: true });
+                }
+                if (toggle.id === "log3-toggle") {
+                    revealRelayUtility();
+                }
+
+                checkHiddenLogUnlock();
+
+                const panel = toggle.nextElementSibling;
+                if (!panel) return;
+
+                const isOpen = panel.classList.contains("open");
+
+                logToggles.forEach((btn) => btn.classList.remove("active"));
+                document.querySelectorAll(".log-panel").forEach((p) => p.classList.remove("open"));
+
+                if (!isOpen) {
+                    toggle.classList.add("active");
+                    panel.classList.add("open");
+                }
+
+            });
+        });
+
+        function restoreAudioRepairedState() {
+            audioUnlocked = true;
+            audioRepairStarted = true;
+
+            if (terminalPlayer) {
+                terminalPlayer.classList.remove("audio-corrupted");
+            }
+
+            if (playPauseButton) playPauseButton.disabled = false;
+            if (prevTrackButton) prevTrackButton.disabled = false;
+            if (nextTrackButton) nextTrackButton.disabled = false;
+            if (volumeSlider) volumeSlider.disabled = false;
+            if (audioSourceMeta) audioSourceMeta.classList.add("visible");
+            if (audioTrackCount) audioTrackCount.textContent = String(playlist.length);
+
+            setAudioRepairText(`${playlist.length} TRACKS RESTORED\nREMOTE PLAYLIST ACTIVE`);
+            setStatus("READY");
+
+            const savedMusic = loadMusicState();
+
+            currentTrack = Math.min(
+                Number.isInteger(savedMusic.currentTrack) ? savedMusic.currentTrack : 0,
+                Math.max(playlist.length - 1, 0)
+            );
+
+            if (playlist.length > 0) {
+                pendingMusicRestore = {
+                    currentTime: Number(savedMusic.currentTime) || 0,
+                    volume: Number.isFinite(savedMusic.volume) ? savedMusic.volume : 1,
+                    wasPlaying: Boolean(savedMusic.wasPlaying)
+                };
+
+                loadTrack(currentTrack, false);
+            }
+        }
+
+        function restoreDogwoodState() {
+            fakeGameRestored = true;
+
+            if (dogwoodTab) {
+                dogwoodTab.classList.add("revealed");
+                dogwoodTab.setAttribute("aria-hidden", "false");
+            }
+
+            if (storyState.dogwoodOpened) {
+                fakeGameOpened = true;
+            }
+        }
+
+        function renderCompletedRelayState() {
+            const relayContent = document.getElementById("relay-content");
+            if (!relayContent) return;
+
+            relayInitialized = true;
+            relayUnlocked = true;
+
+            relayContent.innerHTML = `
+                        <div class="relay-chat">
+                            <div class="relay-chat-header">
+                                <span>RELAY CHAT://Razz_matazzim</span>
+                                <span class="relay-chat-status">
+                                    <span class="relay-chat-dot" style="background: transparent; box-shadow: none;"></span>
+                                    <span class="relay-chat-status-text">DISCONNECTED</span>
+                                </span>
+                            </div>
+
+                            <div class="relay-chat-log" id="relay-chat-log">
+                                <div class="relay-chat-system">&gt; SECURE RELAY ESTABLISHED</div>
+                                    <div class="relay-chat-system">&gt; REMOTE USER LOST</div>
+                            </div>
+
+                            <div class="relay-chat-typing" id="relay-chat-typing"></div>
+
+                            <div class="relay-chat-input-row">
+                                <input
+                                    class="relay-chat-input"
+                                    id="relay-chat-input"
+                                    type="text"
+                                    placeholder="relay connection lost"
+                                    disabled
+                                />
+                                <button class="boot-button" id="relay-chat-send" type="button" disabled>[ SEND ]</button>
+                            </div>
+                        </div>
+                    `;
+        }
+
+        document.addEventListener("click", async (event) => {
+            const target = event.target.closest(
+                "button, .nav-page-button, .utility-option, .game-tab, .log-toggle, .ascii-progress-bar"
+            );
+
+            if (!target || target.disabled) return;
+            if (target.id === "boot-button") return;
+
+            await ensureUIAudioReady();
+            playBrowseClickSound(target);
+        });
+
+        if (uiSoundToggle) {
+            uiSoundToggle.addEventListener("click", () => {
+                uiSoundEnabled = !uiSoundEnabled;
+                saveStoryState({ uiSoundEnabled });
+                applyInterfaceSettings();
+            });
+        }
+
+        if (crtToggle) {
+            crtToggle.addEventListener("click", () => {
+                crtEnabled = !crtEnabled;
+                saveStoryState({ crtEnabled });
+                applyInterfaceSettings();
+            });
+        }
+
+        if (resetProgressButton) {
+            resetProgressButton.addEventListener("click", openResetConfirmation);
+        }
+
+        if (resetProgressNo) {
+            resetProgressNo.addEventListener("click", closeResetConfirmation);
+        }
+
+        if (resetProgressYes) {
+            resetProgressYes.addEventListener("click", () => {
+                if (storyStateStatus) {
+                    storyStateStatus.textContent = "RESETTING...";
+                }
+
+                resetProgressYes.disabled = true;
+
+                setTimeout(() => {
+                    resetCeepoStoryProgress();
+                }, 250);
+            });
+        }
+
+        let savedStoryStateApplied = false;
+
+        function applySavedStoryState() {
+            if (savedStoryStateApplied) return;
+            savedStoryStateApplied = true;
+
+            uiSoundEnabled = storyState.uiSoundEnabled !== false;
+            crtEnabled = storyState.crtEnabled !== false;
+            applyInterfaceSettings();
+
+            log1Opened = Boolean(storyState.log1Opened);
+            log2Opened = Boolean(storyState.log2Opened);
+            hiddenLogUnlocked = Boolean(storyState.hiddenLogUnlocked);
+            relayUnlocked = Boolean(storyState.relayUnlocked);
+            relayInitialized = Boolean(storyState.relayInitialized);
+            fakeGameRestored = Boolean(storyState.dogwoodRevealed);
+            fakeGameOpened = Boolean(storyState.dogwoodOpened);
+
+            if (hiddenLogUnlocked && log3Toggle) {
+                log3Toggle.classList.add("revealed");
+
+                if (log3Time) {
+                    log3Time.textContent =
+                        storyState.hiddenLogTimestamp ||
+                        "previous session - timestamp unavailable";
+                }
+            }
+
+            if (relayUnlocked && relayButton) {
+                relayButton.classList.add("revealed");
+            }
+
+            if (storyState.dogwoodRevealed) {
+                restoreDogwoodState();
+
+                if (!storyState.dogwoodOpened && favoritesNavButton) {
+                    favoritesNavButton.classList.add("favorites-nav-alert");
+                }
+            }
+
+            if (storyState.audioRepaired) {
+                restoreAudioRepairedState();
+            }
+
+            if (storyState.storyComplete) {
+                renderCompletedRelayState();
+                updateRelayStatusDisplay("DISCONNECTED", "Razz_matazzim");
+            } else if (storyState.relayInitialized) {
+                updateRelayStatusDisplay("READY", "NONE");
+                relayInitialized = false;
+                showRelaySearchForm();
+            }
+
+            const savedPage = pageMeta[storyState.currentPage]
+                ? storyState.currentPage
+                : "home";
+
+            const savedUtility = utilityPanels[storyState.currentUtility]
+                ? storyState.currentUtility
+                : "notes";
+
+            showPage(savedPage);
+            showUtility(savedUtility);
+        }
+
+        showPage("home");
+        showUtility("notes");
+
+        const bootOverlay = document.getElementById("boot-overlay");
+        const bootButton = document.getElementById("boot-button");
+        const bootLines = document.getElementById("boot-lines");
+        const bootCursor = document.getElementById("boot-cursor");
+        const bootProgressFill = document.getElementById("boot-progress-fill");
+        const bootProgressLabel = document.getElementById("boot-progress-label");
+        const screenTransition = document.getElementById("screen-transition");
+
+        let uiAudioContext = null;
+        let bootInProgress = false;
+        const BOOT_SESSION_KEY = "ceepoBootedPersistent";
+
+        const bootMessages = [
+            "POWERING DISPLAY...",
+            "LOADING CEEPO'S CORNER...",
+            "MOUNTING FAVORITES DIRECTORY...",
+            "CHECKING LOG FILES...",
+            "VERIFYING CONNECTION VIA HOST 'joe-nuts1'...",
+            "RESTORING OLD SIGNALS...",
+            "AUDIO CHANNEL ........ OK",
+            "WELCOME, VISITOR."
+        ];
+
+        function getUIAudioContext() {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return null;
+
+            if (!uiAudioContext || uiAudioContext.state === "closed") {
+                uiAudioContext = new AudioContextClass();
+            }
+
+            return uiAudioContext;
+        }
+
+        async function ensureUIAudioReady() {
+            const ctx = getUIAudioContext();
+            if (!ctx) return null;
+
+            if (ctx.state === "suspended") {
+                try {
+                    await ctx.resume();
+                } catch (error) {
+                    console.error("Could not resume audio context:", error);
+                }
+            }
+
+            return ctx;
+        }
+
+        function playBootTone(audioContext, frequency, duration, type = "square", volume = 0.02) {
+            if (!uiSoundEnabled) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+            gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + duration);
+        }
+
+        function renderBootBar(progress) {
+            const totalBars = 32;
+            const filledBars = Math.round((progress / 100) * totalBars);
+            const emptyBars = totalBars - filledBars;
+
+            bootProgressFill.textContent =
+                "[" +
+                "█".repeat(filledBars) +
+                "░".repeat(emptyBars) +
+                "]";
+        }
+
+        function resetBootVisualState() {
+            if (bootOverlay) {
+                bootOverlay.classList.remove("hidden");
+            }
+
+            if (screenTransition) {
+                screenTransition.classList.remove("active");
+                screenTransition.classList.remove("power-on");
+            }
+
+            if (siteShell) {
+                siteShell.classList.remove("pre-poweron");
+                siteShell.classList.remove("powering-on");
+            }
+
+            if (bootButton) {
+                bootButton.disabled = false;
+            }
+
+            if (bootLines) {
+                bootLines.textContent = "SYSTEM IDLE.\nAWAITING USER INPUT.";
+            }
+
+            if (bootCursor) {
+                bootCursor.classList.remove("hidden");
+            }
+
+            if (bootProgressFill) {
+                renderBootBar(0);
+            }
+
+            if (bootProgressLabel) {
+                bootProgressLabel.textContent = "LOAD STATUS: 000%";
+            }
+
+            bootInProgress = false;
+        }
+
+        function bootWait(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        async function runBootSequence() {
+            if (
+                !bootOverlay ||
+                !bootButton ||
+                !bootLines ||
+                !bootProgressFill ||
+                !bootProgressLabel ||
+                !screenTransition ||
+                !siteShell
+            ) {
+                console.error("Boot sequence is missing one or more required HTML elements.");
+                return;
+            }
+
+            if (bootInProgress) return;
+            bootInProgress = true;
+
+            bootButton.disabled = true;
+            bootLines.textContent = "";
+            renderBootBar(0);
+            bootProgressLabel.textContent = "LOAD STATUS: 000%";
+
+            if (bootCursor) {
+                bootCursor.classList.remove("hidden");
+            }
+
+            const audioContext = await ensureUIAudioReady();
+            const totalSteps = bootMessages.length;
+
+            async function typeLine(line, index) {
+                for (let i = 0; i < line.length; i++) {
+                    bootLines.textContent += line[i];
+                    bootLines.scrollTop = bootLines.scrollHeight;
+
+                    if (audioContext && audioContext.state === "running") {
+                        if (i % 2 === 0) {
+                            const freq = 240 + index * 30 + (i % 6) * 8;
+                            playBootTone(audioContext, freq, 0.025, "square", 0.01);
+                        }
+                    }
+
+                    await bootWait(28);
+                }
+
+                bootLines.textContent += "\n";
+                bootLines.scrollTop = bootLines.scrollHeight;
+            }
+
+            for (let index = 0; index < bootMessages.length; index++) {
+                const line = bootMessages[index];
+
+                await typeLine(line, index);
+
+                const progress = Math.round(((index + 1) / totalSteps) * 100);
+                renderBootBar(progress);
+                bootProgressLabel.textContent = `LOAD STATUS: ${String(progress).padStart(3, "0")}%`;
+
+                if (audioContext && audioContext.state === "running") {
+                    const base = 220 + index * 35;
+                    playBootTone(audioContext, base, 0.08, "triangle", 0.014);
+                }
+
+                await bootWait(220);
+            }
+
+            await bootWait(250);
+
+            if (audioContext && audioContext.state === "running") {
+                playBootTone(audioContext, 760, 0.12, "sine", 0.02);
+            }
+
+            renderBootBar(100);
+            bootProgressLabel.textContent = "LOAD STATUS: 100%";
+
+            await bootWait(250);
+
+            if (bootCursor) {
+                bootCursor.classList.add("hidden");
+            }
+
+            siteShell.classList.add("pre-poweron");
+            screenTransition.classList.add("active");
+
+            await bootWait(120);
+
+            bootOverlay.classList.add("hidden");
+
+            await bootWait(530);
+
+            screenTransition.classList.add("power-on");
+            siteShell.classList.add("powering-on");
+
+            if (audioContext && audioContext.state === "running") {
+                playBootTone(audioContext, 980, 0.08, "square", 0.018);
+                setTimeout(() => {
+                    playBootTone(audioContext, 640, 0.12, "sine", 0.014);
+                }, 70);
+            }
+
+            await bootWait(600);
+
+            screenTransition.classList.remove("active");
+            screenTransition.classList.remove("power-on");
+            siteShell.classList.remove("pre-poweron");
+            siteShell.classList.remove("powering-on");
+            bootInProgress = false;
+
+            localStorage.setItem(BOOT_SESSION_KEY, "true");
+        }
+
+        async function startBoot() {
+            if (bootInProgress) return;
+            await ensureUIAudioReady();
+            await runBootSequence();
+        }
+
+        async function rebootSystem() {
+            if (bootInProgress) return;
+
+            await ensureUIAudioReady();
+
+            const ctx = getUIAudioContext();
+            if (ctx && ctx.state === "running") {
+                playBootTone(ctx, 300, 0.08, "square", 0.02);
+                setTimeout(() => {
+                    playBootTone(ctx, 180, 0.12, "sine", 0.018);
+                }, 90);
+            }
+
+            resetBootVisualState();
+
+            setTimeout(() => {
+                runBootSequence();
+            }, 180);
+        }
+
+        if (bootButton) {
+            bootButton.addEventListener("click", startBoot);
+        }
+
+        if (rebootButton) {
+            rebootButton.addEventListener("click", openRebootConfirmation);
+        }
+
+        if (rebootConfirmNo) {
+            rebootConfirmNo.addEventListener("click", closeRebootConfirmation);
+        }
+
+        if (rebootConfirmYes) {
+            rebootConfirmYes.addEventListener("click", async () => {
+                rebootConfirmYes.disabled = true;
+
+                if (storyStateStatus) {
+                    storyStateStatus.textContent = "REBOOTING...";
+                }
+
+                closeRebootConfirmation();
+                await rebootSystem();
+                rebootConfirmYes.disabled = false;
+            });
+        }
+
+        resetBootVisualState();
+
+        if (localStorage.getItem(BOOT_SESSION_KEY) === "true" && bootOverlay) {
+            bootOverlay.classList.add("hidden");
+            if (bootCursor) {
+                bootCursor.classList.add("hidden");
+            }
+        }
+
+        let terminalCursor = document.querySelector(".terminal-cursor");
+
+        if (!terminalCursor) {
+            terminalCursor = document.createElement("div");
+            terminalCursor.className = "terminal-cursor";
+            document.body.appendChild(terminalCursor);
+        }
+
+        terminalCursor.style.display = "none";
+
+        document.addEventListener("pointermove", (event) => {
+            if (event.pointerType === "touch") return;
+
+            terminalCursor.style.display = "block";
+            terminalCursor.style.left = `${event.clientX}px`;
+            terminalCursor.style.top = `${event.clientY}px`;
+        });
+
+        document.addEventListener("pointerdown", (event) => {
+            if (event.pointerType === "touch") return;
+            terminalCursor.classList.add("clicking");
+        });
+
+        document.addEventListener("pointerup", () => {
+            terminalCursor.classList.remove("clicking");
+        });
+
+        document.addEventListener("pointercancel", () => {
+            terminalCursor.classList.remove("clicking");
+        });
+
+        document.documentElement.addEventListener("mouseleave", () => {
+            terminalCursor.style.display = "none";
+        });
+
+        window.addEventListener("blur", () => {
+            terminalCursor.style.display = "none";
+            terminalCursor.classList.remove("clicking");
+        });
+
+    </script>
+</body>
+</html>

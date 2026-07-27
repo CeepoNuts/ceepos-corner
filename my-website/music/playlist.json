@@ -1,0 +1,8 @@
+{
+  "tracks": [
+    { "src": "You.mp3", "name":  "You" },
+    { "src": "All That We Perceive.mp3", "name": "All That We Perceive" },
+    { "src": "High.mp3", "name": "High" },
+    { "src": "In The Waiting Line.mp3", "name": "In The Waiting Line" }
+  ]
+}

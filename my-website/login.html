@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ceepo's Corner // ACCESS</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+
+        @font-face {
+            font-family: "MSW98UI";
+            src: url("fonts/MSW98UI-Regular.ttf") format("truetype");
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .login-shell {
+            width: min(520px, calc(100vw - 32px));
+            border: 2px solid var(--border);
+            background: rgba(20, 0, 0, 0.94);
+            box-shadow: var(--glow), inset 0 0 24px rgba(255, 80, 80, 0.08);
+            position: relative;
+            z-index: 2;
+        }
+
+            /* CRT effects only for the login shell */
+            .login-shell::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: repeating-linear-gradient( to bottom, rgba(255, 80, 80, 0.06) 0px, rgba(255, 80, 80, 0.06) 1px, transparent 3px, transparent 5px );
+                opacity: 0.16;
+                pointer-events: none;
+                z-index: 1;
+            }
+
+            .login-shell::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: radial-gradient( ellipse at center, transparent 67%, rgba(0, 0, 0, 0.12) 72%, rgba(0, 0, 0, 0.28) 88%, rgba(0, 0, 0, 0.45) 100% ), linear-gradient( to bottom, rgba(255, 80, 80, 0.05), rgba(0, 0, 0, 0.04) 50%, rgba(255, 80, 80, 0.02) );
+                box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.85);
+                pointer-events: none;
+                z-index: 1;
+            }
+
+        .login-topbar,
+        .login-title,
+        .login-text,
+        .login-label,
+        .login-ascii,
+        .login-status,
+        .login-button,
+        .login-input {
+            position: relative;
+            z-index: 2;
+            text-shadow: var(--glow-strong);
+            animation: textFlicker 7s infinite steps(1);
+        }
+
+        .login-topbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--border);
+            color: var(--warning);
+            text-shadow: var(--glow);
+        }
+
+        .login-content {
+            padding: 18px;
+            display: grid;
+            gap: 14px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .login-title {
+            margin: 0;
+            color: var(--accent);
+            text-shadow: var(--glow);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .login-text {
+            margin: 0;
+            color: var(--dim);
+            line-height: 1.5;
+        }
+
+        .login-form {
+            display: grid;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .login-field {
+            display: grid;
+            gap: 6px;
+        }
+
+        .login-label {
+            color: var(--warning);
+            font-size: 0.9rem;
+        }
+
+        .login-input {
+            width: 100%;
+            border: 1px solid var(--border);
+            background: rgba(10, 0, 0, 0.9);
+            color: var(--text);
+            font: inherit;
+            padding: 10px 12px;
+            outline: none;
+            box-shadow: inset 0 0 10px rgba(255, 80, 80, 0.05);
+        }
+
+            .login-input:focus {
+                box-shadow: var(--glow), inset 0 0 10px rgba(255, 80, 80, 0.08);
+            }
+
+        .login-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        .login-button {
+            border: 1px solid var(--border);
+            background: rgba(20, 0, 0, 0.9);
+            color: var(--text);
+            font: inherit;
+            padding: 10px 14px;
+            box-shadow: var(--glow);
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+
+            .login-button:hover,
+            .login-button:focus-visible {
+                background: rgba(255, 80, 80, 0.12);
+                color: #fff;
+                transform: translateY(-1px);
+                outline: none;
+            }
+
+        .login-status {
+            min-height: 1.2em;
+            color: var(--warning);
+            font-size: 0.9rem;
+        }
+
+        .login-ascii {
+            margin: 0 0 4px;
+            color: var(--accent);
+            text-shadow: var(--glow);
+            font-size: 0.9rem;
+            line-height: 1.1;
+            white-space: pre-wrap;
+        }
+
+        .login-side-window {
+            position: absolute;
+            right: 90px;
+            top: 130px;
+            width: 420px;
+            height: 500px;
+            border: 2px solid #ffffff;
+            background: #d8d3c3;
+            z-index: 5;
+            overflow: hidden;
+            font-family: "MSW98UI", sans-serif;
+            text-shadow: none;
+            animation: none;
+            filter: none;
+            font-size: 13px; /* shrunk only for messenger window */
+            display: none;
+        }
+
+            .login-side-window * {
+                font-family: "MSW98UI", sans-serif;
+                text-shadow: none !important;
+                animation: none !important;
+                filter: none !important;
+                font-size: 13px; /* shrunk only for messenger window */
+            }
+
+        .login-side-titlebar {
+            height: 44px;
+            background: #2f6fff;
+            border-bottom: 2px solid #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+        }
+
+        .login-side-username {
+            color: #ffffff;
+            font-family: "MSW98UI", sans-serif;
+            font-size: 12px;
+            letter-spacing: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .login-side-close {
+            width: 22px;
+            height: 22px;
+            background: #ff2a2a;
+            border: 2px solid #ffffff;
+            box-sizing: border-box;
+            display: inline-block;
+            flex: 0 0 auto;
+        }
+
+        .login-side-body {
+            height: calc(100% - 44px);
+            background: #d8d3c3;
+            padding: 12px;
+            display: grid;
+            grid-template-rows: auto 1fr auto auto;
+            gap: 10px;
+        }
+
+        .chat-status-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #c9c3b2;
+            border: 2px solid #b7b19f;
+            padding: 6px 8px;
+            color: #111111;
+            font-family: "MSW98UI", sans-serif;
+        }
+
+        .chat-status-dot {
+            width: 10px;
+            height: 10px;
+            display: inline-block;
+            border: 1px solid #111111;
+        }
+
+            .chat-status-dot.offline {
+                background: #7a7a7a;
+            }
+
+            .chat-status-dot.online {
+                background: #29c44d;
+            }
+
+        .chat-log {
+            background: #efefef;
+            border: 2px solid #b7b7b7;
+            padding: 10px;
+            overflow-y: auto;
+            color: #111111;
+            font-family: "MSW98UI", sans-serif;
+            line-height: 1.45;
+        }
+
+        .chat-system {
+            color: #444444;
+            margin-bottom: 10px;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+        }
+
+        .chat-name {
+            color: #2f6fff;
+        }
+
+        .chat-text {
+            color: #111111;
+        }
+
+        .chat-typing {
+            min-height: 20px;
+            color: #2f6fff;
+            font-family: "MSW98UI", sans-serif;
+            padding: 4px 2px 0;
+        }
+
+        .chat-input-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .chat-input {
+            width: 100%;
+            border: 2px solid #b7b7b7;
+            background: #efefef;
+            color: #111111;
+            font: inherit;
+            padding: 8px 10px;
+            outline: none;
+        }
+
+            .chat-input.active-typing {
+                border-color: #2f6fff;
+                box-shadow: 0 0 6px rgba(47, 111, 255, 0.6), inset 0 0 6px rgba(47, 111, 255, 0.25);
+            }
+
+
+
+        .chat-send-button {
+            border: 2px solid #b7b7b7;
+            background: #efefef;
+            color: #2f6fff;
+            font: inherit;
+            padding: 8px 10px;
+            cursor: pointer;
+        }
+
+            .chat-send-button:hover,
+            .chat-send-button:focus-visible {
+                border-color: #2f6fff;
+                outline: none;
+            }
+
+
+        /* Keep the operating-system cursor hidden anywhere the custom cursor is used. */
+        @media (pointer: fine) {
+            html,
+            body,
+            body *,
+            input,
+            textarea,
+            select,
+            button,
+            label,
+            a {
+                cursor: none !important;
+            }
+        }
+
+        @media (pointer: coarse) {
+            .terminal-cursor {
+                display: none !important;
+            }
+        }
+
+        @keyframes textFlicker {
+            0%, 15%, 19%, 21%, 60%, 100% {
+                opacity: 1;
+            }
+
+            16% {
+                opacity: 0.92;
+            }
+
+            17% {
+                opacity: 0.85;
+            }
+
+            20% {
+                opacity: 0.9;
+            }
+
+            61% {
+                opacity: 0.94;
+            }
+
+            62% {
+                opacity: 0.88;
+            }
+        }
+
+        @media (max-width: 1400px) {
+            .login-side-window {
+                right: 40px;
+                width: 360px;
+                height: 460px;
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .login-side-window {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .login-content {
+                padding: 14px;
+            }
+
+            .login-actions {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="crt-shimmer"></div>
+
+    <div class="login-shell">
+        <div class="login-topbar">
+            <span>CEEPO'S CORNER // ACCESS NODE</span>
+            <span>LOCKED</span>
+        </div>
+
+        <div class="login-content">
+            <pre class="login-ascii">[ AUTHORIZATION REQUIRED ]</pre>
+
+            <h1 class="login-title">TERMINAL LOGIN</h1>
+            <p class="login-text">
+                Enter credentials to continue.
+            </p>
+
+            <form class="login-form" id="login-form">
+                <div class="login-field">
+                    <label class="login-label" for="username">USERNAME</label>
+                    <input class="login-input" id="username" name="username" type="text" autocomplete="off" />
+                </div>
+
+                <div class="login-field">
+                    <label class="login-label" for="password">PASSWORD</label>
+                    <input class="login-input" id="password" name="password" type="password" autocomplete="off" />
+                </div>
+
+                <div class="login-actions">
+                    <button class="login-button" type="submit">[ ENTER ]</button>
+                    <div class="login-status" id="login-status"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="login-side-window">
+        <div class="login-side-titlebar">
+            <span class="login-side-username">INSTANT MESSENGER - CHAT: Razz_matazzim</span>
+            <span class="login-side-close"></span>
+        </div>
+
+        <div class="login-side-body">
+            <div class="chat-status-row">
+                <span class="chat-status-dot offline" id="chat-status-dot"></span>
+                <span class="chat-status-text" id="chat-status-text">offline</span>
+            </div>
+
+            <div class="chat-log" id="chat-log">
+                <div class="chat-system">No active messages.</div>
+            </div>
+
+            <div class="chat-typing" id="chat-typing"></div>
+
+            <div class="chat-input-row">
+                <input type="text" class="chat-input" id="chat-input" placeholder="type message..." />
+                <button type="button" class="chat-send-button" id="chat-send-button">SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById("login-form");
+        const statusText = document.getElementById("login-status");
+        const submitButton = form ? form.querySelector('button[type="submit"]') : null;
+
+        const usernameInput = document.getElementById("username");
+        const passwordInput = document.getElementById("password");
+
+        const messengerWindow = document.querySelector(".login-side-window");
+
+        const chatStatusDot = document.getElementById("chat-status-dot");
+        const chatStatusText = document.getElementById("chat-status-text");
+        const chatLog = document.getElementById("chat-log");
+        const chatTyping = document.getElementById("chat-typing");
+        const chatInput = document.getElementById("chat-input");
+        const chatSendButton = document.getElementById("chat-send-button");
+
+        let loginAttemptCount = 0;
+        let sequenceStarted = false;
+        let waitingForUserSend = false;
+        let isBusy = false;
+        let currentStep = 0;
+        let loginLocked = false;
+
+        const CORRECT_USERNAME = "joenuts-1";
+        const CORRECT_PASSWORD = "joenuts-11";
+
+        const scriptSteps = [
+            { speaker: "R", text: "oh shit! the aol messenger patch worked!" },
+            { speaker: "R", text: "okay okay i see that ur in now, please stop typing random shit" },
+            { speaker: "R", text: "please please don’t get us locked out this is our one shot" },
+
+            { speaker: "U", text: "What am I meant to do then?" },
+
+            { speaker: "R", text: "ok yes biz talk now, hear me out" },
+            { speaker: "R", text: "so i think i found a proxy way into this terminal…" },
+            { speaker: "R", text: "there was actually TWO users registered for access to this archive" },
+            { speaker: "R", text: "‘ceepo’ being one of them but who fkn knows where that dude went" },
+            { speaker: "R", text: "but some ‘joenuts-1’ seems to be registered as well" },
+
+            { speaker: "U", text: "‘joenuts-1’? Who is that?" },
+
+            { speaker: "R", text: "ur guess is as good as mine, no clue" },
+            { speaker: "R", text: "fun name though" },
+            { speaker: "R", text: "must be someone important too if they had access" },
+
+            { speaker: "U", text: "You sure we should keep going along with this?" },
+            { speaker: "U", text: "We're sticking our noses in an active investigation." },
+
+            { speaker: "R", text: "man fuck the rules" },
+            { speaker: "R", text: "do u want to know or not?" },
+
+            { speaker: "U", text: "I do. There’s something deeper to all this." },
+            { speaker: "U", text: "But I'm worried about if it'll be worth it." },
+
+            { speaker: "R", text: "only one way to find out my friend" },
+            { speaker: "R", text: "u can't lie, smth just don’t add up about it" },
+            { speaker: "R", text: "alrighty back to biz since we’re on a timer here" },
+            { speaker: "R", text: "i can send u that log-in and password and u just gotta type it and get in there" },
+
+            { speaker: "U", text: "How'd you get your hands on that anyways?" },
+
+            { speaker: "R", text: "it pays to know the right people with the right skills" },
+            { speaker: "R", text: "the same way i was able to source u that terminal to begin with" },
+            { speaker: "R", text: "when you log-in btw ur going in BLIND" },
+            { speaker: "R", text: "this patch will only work for this page i believe" },
+            { speaker: "R", text: "once u get in, try and find some backdoor bs u can open for me to follow" },
+
+            { speaker: "U", text: "I'll take a look as quick as I can." },
+
+            { speaker: "R", text: "that's what i like to hear" },
+            { speaker: "R", text: "alr user: joenuts-1 and the pass: joenuts-11" },
+
+            { speaker: "U", text: "Are you serious?" },
+
+            { speaker: "R", text: "love to stay and chat but i gotta move, see u in a few" },
+            { speaker: "R", text: "poke around and find something juicy for me :)" },
+
+            { speaker: "STATUS_OFFLINE", text: "Razz_matazzim has gone offline." }
+        ];
+
+        let audioContext = null;
+
+        function getAudioContext() {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return null;
+
+            if (!audioContext || audioContext.state === "closed") {
+                audioContext = new AudioContextClass();
+            }
+
+            return audioContext;
+        }
+
+        async function ensureAudioReady() {
+            const ctx = getAudioContext();
+            if (!ctx) return null;
+
+            if (ctx.state === "suspended") {
+                try {
+                    await ctx.resume();
+                } catch (error) {
+                    console.error("Audio resume failed:", error);
+                }
+            }
+
+            return ctx;
+        }
+
+        function playTone(freq = 440, duration = 0.05, type = "square", volume = 0.01) {
+            const ctx = getAudioContext();
+            if (!ctx || ctx.state !== "running") return;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+            gain.gain.setValueAtTime(volume, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(ctx.currentTime + duration);
+        }
+
+        function playKeySound() {
+            playTone(520, 0.025, "square", 0.006);
+        }
+
+        function playSendSound() {
+            playTone(760, 0.04, "square", 0.009);
+            setTimeout(() => playTone(620, 0.05, "triangle", 0.007), 35);
+        }
+
+        function playDeniedSound() {
+            playTone(220, 0.09, "square", 0.012);
+            setTimeout(() => playTone(160, 0.12, "triangle", 0.010), 70);
+        }
+
+        function playSuccessSound() {
+            playTone(520, 0.05, "square", 0.010);
+            setTimeout(() => playTone(680, 0.07, "triangle", 0.009), 55);
+            setTimeout(() => playTone(880, 0.09, "sine", 0.008), 120);
+        }
+
+        function showMessenger() {
+            if (messengerWindow) {
+                messengerWindow.style.display = "block";
+            }
+        }
+
+        function setOffline() {
+            if (!chatStatusDot || !chatStatusText) return;
+            chatStatusDot.classList.remove("online");
+            chatStatusDot.classList.add("offline");
+            chatStatusText.textContent = "offline";
+        }
+
+        function setOnline() {
+            if (!chatStatusDot || !chatStatusText) return;
+            chatStatusDot.classList.remove("offline");
+            chatStatusDot.classList.add("online");
+            chatStatusText.textContent = "online";
+        }
+
+        function clearChatLog() {
+            if (!chatLog) return;
+            chatLog.innerHTML = "";
+        }
+
+        function addSystemMessage(text) {
+            if (!chatLog) return;
+            const div = document.createElement("div");
+            div.className = "chat-system";
+            div.textContent = text;
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function addChatMessage(name, text) {
+            if (!chatLog) return;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "chat-message";
+
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "chat-name";
+            nameSpan.textContent = `${name}:`;
+
+            const textSpan = document.createElement("span");
+            textSpan.className = "chat-text";
+            textSpan.textContent = ` ${text}`;
+
+            wrapper.appendChild(nameSpan);
+            wrapper.appendChild(textSpan);
+
+            chatLog.appendChild(wrapper);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function wait(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        function getCurrentUserTarget() {
+            if (currentStep >= scriptSteps.length) return "";
+            const step = scriptSteps[currentStep];
+            if (!step || step.speaker !== "U") return "";
+            return step.text;
+        }
+
+        function setTypingActive(active) {
+            if (!chatInput) return;
+
+            if (active) {
+                chatInput.classList.add("active-typing");
+                chatInput.focus();
+            } else {
+                chatInput.classList.remove("active-typing");
+            }
+        }
+
+        function isCurrentUserLineComplete() {
+            const target = getCurrentUserTarget();
+            if (!chatInput) return false;
+            return chatInput.value === target;
+        }
+
+        function resetChatState() {
+            setOffline();
+            clearChatLog();
+            addSystemMessage("No active messages.");
+
+            if (chatTyping) {
+                chatTyping.textContent = "";
+            }
+
+            if (chatInput) {
+                chatInput.value = "";
+            }
+
+            waitingForUserSend = false;
+            isBusy = false;
+            currentStep = 0;
+        }
+
+        async function runRazzRepliesUntilUserTurn() {
+            if (isBusy) return;
+            isBusy = true;
+
+            while (currentStep < scriptSteps.length) {
+                const step = scriptSteps[currentStep];
+
+                if (step.speaker === "R") {
+                    if (chatTyping) {
+                        chatTyping.textContent = "Razz_matazzim is typing...";
+                    }
+
+                    const typingDelay = Math.min(3750, Math.max(900, step.text.length * 47));
+                    await wait(typingDelay);
+
+                    if (chatTyping) {
+                        chatTyping.textContent = "";
+                    }
+
+                    addChatMessage("Razz_matazzim", step.text);
+                    playSendSound();
+                    currentStep++;
+
+                    const afterMessageDelay = Math.min(1400, Math.max(450, step.text.length * 12));
+                    await wait(afterMessageDelay);
+                    continue;
+                }
+
+                if (step.speaker === "U") {
+                    waitingForUserSend = true;
+
+                    if (chatTyping) {
+                        chatTyping.textContent = "";
+                    }
+
+                    if (chatInput) {
+                        chatInput.value = "";
+                    }
+
+                    setTypingActive(true);
+
+                    isBusy = false;
+                    return;
+                }
+
+                if (step.speaker === "STATUS_OFFLINE") {
+                    if (chatTyping) {
+                        chatTyping.textContent = "";
+                    }
+
+                    addSystemMessage(step.text);
+                    setOffline();
+                    setTypingActive(false);
+                    currentStep++;
+                    isBusy = false;
+                    return;
+                }
+            }
+
+            isBusy = false;
+        }
+
+        async function sendNextUserScriptedMessage() {
+            if (!waitingForUserSend || isBusy) return;
+            if (currentStep >= scriptSteps.length) return;
+
+            const step = scriptSteps[currentStep];
+            if (step.speaker !== "U") return;
+            if (!isCurrentUserLineComplete()) return;
+
+            waitingForUserSend = false;
+            setTypingActive(false);
+
+            addChatMessage("New_User", step.text);
+            playSendSound();
+            currentStep++;
+
+            if (chatInput) {
+                chatInput.value = "";
+            }
+
+            await wait(350);
+
+            if (currentStep < scriptSteps.length && scriptSteps[currentStep].speaker === "U") {
+                waitingForUserSend = true;
+                if (chatInput) {
+                    chatInput.value = "";
+                }
+                setTypingActive(true);
+                return;
+            }
+
+            runRazzRepliesUntilUserTurn();
+        }
+
+        async function beginChatSequence() {
+            if (sequenceStarted) return;
+            sequenceStarted = true;
+
+            clearChatLog();
+
+            await wait(1200);
+            setOnline();
+            addSystemMessage("Razz_matazzim has gone online.");
+
+            await wait(900);
+            runRazzRepliesUntilUserTurn();
+        }
+
+        async function handleSuccessfulLogin() {
+            if (loginLocked) return;
+            loginLocked = true;
+
+            await ensureAudioReady();
+            playSuccessSound();
+
+            if (statusText) {
+                statusText.textContent = "ACCESS GRANTED";
+            }
+
+            if (usernameInput) usernameInput.disabled = true;
+            if (passwordInput) passwordInput.disabled = true;
+            if (submitButton) submitButton.disabled = true;
+            if (chatInput) chatInput.disabled = true;
+            if (chatSendButton) chatSendButton.disabled = true;
+
+            setTimeout(() => {
+                window.location.assign("index.html");
+            }, 700);
+        }
+
+        async function handleUserSend() {
+            if (loginAttemptCount < 2) return;
+            if (!waitingForUserSend || isBusy) return;
+
+            await ensureAudioReady();
+            await sendNextUserScriptedMessage();
+        }
+
+        resetChatState();
+
+        if (form) {
+            form.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                if (loginLocked) return;
+
+                await ensureAudioReady();
+
+                const username = usernameInput ? usernameInput.value.trim() : "";
+                const password = passwordInput ? passwordInput.value : "";
+
+                if (username === CORRECT_USERNAME && password === CORRECT_PASSWORD) {
+                    await handleSuccessfulLogin();
+                    return;
+                }
+
+                loginAttemptCount++;
+
+                if (loginAttemptCount === 1) {
+                    showMessenger();
+
+                    if (statusText) {
+                        statusText.textContent = "ACCESS DENIED";
+                    }
+
+                    playDeniedSound();
+                    return;
+                }
+
+                if (loginAttemptCount === 2) {
+                    if (statusText) {
+                        statusText.textContent = "ACCESS DENIED";
+                    }
+
+                    playDeniedSound();
+                    beginChatSequence();
+                    return;
+                }
+
+                if (statusText) {
+                    statusText.textContent = "ACCESS DENIED";
+                }
+
+                playDeniedSound();
+            });
+        }
+
+        if (chatSendButton) {
+            chatSendButton.addEventListener("click", async () => {
+                await ensureAudioReady();
+                await handleUserSend();
+            });
+        }
+
+        if (chatInput) {
+            chatInput.addEventListener("keydown", async (event) => {
+                if (loginAttemptCount < 2 || !waitingForUserSend) {
+                    return;
+                }
+
+                const target = getCurrentUserTarget();
+
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    await ensureAudioReady();
+                    await handleUserSend();
+                    return;
+                }
+
+                if (
+                    event.key === "Backspace" ||
+                    event.key === "Delete" ||
+                    event.ctrlKey ||
+                    event.metaKey ||
+                    event.altKey
+                ) {
+                    event.preventDefault();
+                    return;
+                }
+
+                if (event.key.length === 1) {
+                    event.preventDefault();
+                    await ensureAudioReady();
+
+                    if (chatInput.value.length < target.length) {
+                        const nextCharacter = target[chatInput.value.length];
+                        chatInput.value += nextCharacter;
+                        chatInput.setSelectionRange(chatInput.value.length, chatInput.value.length);
+                        playKeySound();
+                    }
+
+                    return;
+                }
+
+                event.preventDefault();
+            });
+
+            chatInput.addEventListener("paste", (event) => {
+                if (waitingForUserSend) {
+                    event.preventDefault();
+                }
+            });
+
+            chatInput.addEventListener("drop", (event) => {
+                if (waitingForUserSend) {
+                    event.preventDefault();
+                }
+            });
+        }
+
+        if (usernameInput) {
+            usernameInput.addEventListener("keydown", async (event) => {
+                if (event.key.length === 1) {
+                    await ensureAudioReady();
+                    playKeySound();
+                }
+            });
+        }
+
+        if (passwordInput) {
+            passwordInput.addEventListener("keydown", async (event) => {
+                if (event.key.length === 1) {
+                    await ensureAudioReady();
+                    playKeySound();
+                }
+            });
+        }
+    </script>
+
+    <script>
+        const finePointerQuery = window.matchMedia("(pointer: fine)");
+
+        if (finePointerQuery.matches) {
+            const terminalCursor = document.createElement("div");
+            terminalCursor.className = "terminal-cursor";
+            terminalCursor.setAttribute("aria-hidden", "true");
+            terminalCursor.style.display = "none";
+            document.body.appendChild(terminalCursor);
+
+            document.addEventListener("mousemove", (event) => {
+                terminalCursor.style.display = "block";
+                terminalCursor.style.left = `${event.clientX}px`;
+                terminalCursor.style.top = `${event.clientY}px`;
+            });
+
+            document.addEventListener("mousedown", () => {
+                terminalCursor.classList.add("clicking");
+            });
+
+            document.addEventListener("mouseup", () => {
+                terminalCursor.classList.remove("clicking");
+            });
+
+            document.addEventListener("mouseleave", () => {
+                terminalCursor.style.display = "none";
+                terminalCursor.classList.remove("clicking");
+            });
+
+            window.addEventListener("blur", () => {
+                terminalCursor.style.display = "none";
+                terminalCursor.classList.remove("clicking");
+            });
+        }
+    </script>
+
+</body>
+</html>
