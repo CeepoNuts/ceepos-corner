@@ -589,7 +589,6 @@
             gap: 10px;
         }
 
-        /* Prevent the native PC cursor from appearing over themed scrollbars. */
         @media (pointer: fine) {
             *::-webkit-scrollbar,
             *::-webkit-scrollbar-track,
@@ -716,7 +715,7 @@
                             <p>use the navigation above to access different parts of the archive!</p>
                         </section>
 
-                        <p class="build-label">BUILD 1.0.0 // ARCHIVE NODE 88</p>
+                        <p class="build-label">BUILD 1.0.1 // ARCHIVE NODE 88</p>
                     </section>
 
                     <section class="page-panel" id="page-favorites">
@@ -751,6 +750,11 @@
                                     <button class="game-tab" data-tab="stu" type="button">
                                         <span class="file-marker">&gt;</span>
                                         <span class="file-name">STUDIO_SYSTEM.EXE</span>
+                                    </button>
+
+                                    <button class="game-tab" data-tab="proj" type="button">
+                                        <span class="file-marker">&gt;</span>
+                                        <span class="file-name">PROJECT_SILVERFISH.EXE</span>
                                     </button>
 
                                     <button class="game-tab corrupted-game-tab"
@@ -1009,6 +1013,52 @@
                                                 </p>
                                                 <p>
                                                     now this game isnt without its flaws unfortunately. the gameplay has a bit of a jank to it. nothing too horrible or unplayable but just a *jank* that i could feel. i think this game is worth a fair shot and its also not too long to play through and rewards multiple endings.
+                                                </p>
+                                            </article>
+
+                                            <article class="game-entry" id="proj">
+                                                <h3>PROJECT SILVERFISH</h3>
+
+                                                <div class="meta-strip">
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">GENRE</span>
+                                                        <span class="meta-value">Immersive Sim</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">YEAR</span>
+                                                        <span class="meta-value">2025</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">PLATFORM</span>
+                                                        <span class="meta-value">PC</span>
+                                                    </div>
+                                                    <div class="meta-box">
+                                                        <span class="meta-label">DEV/PUB</span>
+                                                        <span class="meta-value">Siris Pendrake</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="game-images">
+                                                    <img src="https://img.itch.zone/aW1hZ2UvMjQwNDg1OS8xNzU3MzE5NC5wbmc=/original/KnTB%2BF.png" alt="proj img1">
+                                                    <img src="https://img.itch.zone/aW1hZ2UvMjQwNDg1OS8xNzU3MzE5NS5wbmc=/original/XGhJt%2F.png" alt="proj img2">
+                                                    <img src="https://img.itch.zone/aW1hZ2UvMjQwNDg1OS8xNzU3MzIwMy5wbmc=/original/uJDUiV.png" alt="proj img3">
+                                                    <img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2941710/1dfd036e0f1ad91cb43f8acce977820e46b141fa/ss_1dfd036e0f1ad91cb43f8acce977820e46b141fa.1920x1080.jpg?t=1750910382" alt="proj img4">
+                                                </div>
+
+                                                <p>
+                                                    Project Silverfish is an immersive sim (i've been loving these lately tbh) that is currently in early access. it scratches a stalker sorta itch that i enjoy. it is published and developed by Siris Pendrake (what a dev name).
+                                                </p>
+                                                <p>
+                                                    like i mentioned before, the core gameplay boils down very heavily to stalker (i can't be bothered to put all the dots). you are placed in an area in a hostile zone and must survive encounters with enemy factions and anomalies. you even have artifact hunting to further cement the parallels. BUT this game does the formula so right and takes out some of the more tedious aspects of stalker, in exchange for a less realistic environment.
+                                                </p>
+                                                <p>
+                                                    yes, the game is made by a furry and has strong furry ties that are obvious. but that should not worry you. everybody knows furries know ball when it comes to details. the gunplay and combat here is so much fun. you get a degree of player choice in how you make your character in terms of customization which is always nice. you can choose how you look, what skills you have, what factions you like/dislike, and where you spawn among some others.
+                                                </p>
+                                                <p>
+                                                    speaking of factions, the AI in this game is pretty solid. the AI will fight eachother, roam around, grab loot, or even trade with the player. the only issue is that they have literal aimbot all the time. it gets so annoying with how accurate they are. but that's my only real issue.
+                                                </p>
+                                                <p>
+                                                    i never ran into any other issues besides this though, the game ran very smoothly and i encountered 0 bugs or glitches that stood out to me. the game is in early access so that's pretty impressive. anyways, check it out if you like stalker or immersive sims.
                                                 </p>
                                             </article>
 
@@ -1542,6 +1592,7 @@
             peri: "PERIPETEIA.EXE",
             pica: "PICAYUNE_DREAMS.EXE",
             stu: "STUDIO_SYSTEM.EXE",
+            proj: "PROJECT_SILVERFISH.EXE",
             dogwood: "DOGWOOD.EXE"
         };
 
@@ -1551,6 +1602,7 @@
             peri: "FILE://PERIPETEIA",
             pica: "FILE://PICAYUNE_DREAMS",
             stu: "FILE://STUDIO_SYSTEM",
+            proj: "FILE://PROJECT_SILVERFISH",
             dogwood: "FILE://DOGWOOD"
         };
 
@@ -2324,26 +2376,26 @@
             if (!relayContent) return;
 
             relayContent.innerHTML = `
-                            <div class="relay-stage">
-                                <p>&gt; REMOTE RELAY STATUS: INITIALIZED</p>
-                                <p>&gt; PORT 88 HANDSHAKE ........ OK</p>
-                                <p>&gt; TARGET RESOLUTION REQUIRED</p>
+                                <div class="relay-stage">
+                                    <p>&gt; REMOTE RELAY STATUS: INITIALIZED</p>
+                                    <p>&gt; PORT 88 HANDSHAKE ........ OK</p>
+                                    <p>&gt; TARGET RESOLUTION REQUIRED</p>
 
-                                <div class="relay-field">
-                                    <label class="relay-label" for="relay-ip-input">TARGET IP</label>
-                                    <input class="relay-input relay-input-active" id="relay-ip-input" type="text" autocomplete="off" spellcheck="false" aria-describedby="relay-instruction" />
+                                    <div class="relay-field">
+                                        <label class="relay-label" for="relay-ip-input">TARGET IP</label>
+                                        <input class="relay-input relay-input-active" id="relay-ip-input" type="text" autocomplete="off" spellcheck="false" aria-describedby="relay-instruction" />
+                                    </div>
+
+                                    <div class="relay-field">
+                                        <label class="relay-label" for="relay-user-input">USERNAME SEARCH</label>
+                                        <input class="relay-input" id="relay-user-input" type="text" autocomplete="off" spellcheck="false" readonly />
+                                    </div>
+
+                                    <p class="relay-hint" id="relay-instruction">&gt; TYPE TARGET IP, THEN USERNAME // PRESS ENTER WHEN COMPLETE</p>
+                                    <p class="relay-status-line" id="relay-search-status"></p>
+                                    <button class="boot-button" id="relay-search-button" type="button">[ SEARCH NODE ]</button>
                                 </div>
-
-                                <div class="relay-field">
-                                    <label class="relay-label" for="relay-user-input">USERNAME SEARCH</label>
-                                    <input class="relay-input" id="relay-user-input" type="text" autocomplete="off" spellcheck="false" readonly />
-                                </div>
-
-                                <p class="relay-hint" id="relay-instruction">&gt; TYPE TARGET IP, THEN USERNAME // PRESS ENTER WHEN COMPLETE</p>
-                                <p class="relay-status-line" id="relay-search-status"></p>
-                                <button class="boot-button" id="relay-search-button" type="button">[ SEARCH NODE ]</button>
-                            </div>
-                        `;
+                            `;
 
             const ipInput = document.getElementById("relay-ip-input");
             const userInput = document.getElementById("relay-user-input");
@@ -2470,14 +2522,14 @@
             }
 
             relayContent.innerHTML = `
-                            <div class="relay-stage">
-                                <p>&gt; TARGET IP: ${RELAY_IP_TARGET}</p>
-                                <p>&gt; USER MATCH: ${RELAY_USER_TARGET}</p>
-                                <div class="relay-sequence-log" id="relay-sequence-log" aria-live="polite"></div>
-                                <div class="relay-ascii-progress" id="relay-connection-progress">[░░░░░░░░░░░░░░░░░░░░░░░░] 000%</div>
-                                <p class="relay-status-line">&gt; CONNECTION PROCESS ACTIVE<span class="relay-wait-cursor">█</span></p>
-                            </div>
-                        `;
+                                <div class="relay-stage">
+                                    <p>&gt; TARGET IP: ${RELAY_IP_TARGET}</p>
+                                    <p>&gt; USER MATCH: ${RELAY_USER_TARGET}</p>
+                                    <div class="relay-sequence-log" id="relay-sequence-log" aria-live="polite"></div>
+                                    <div class="relay-ascii-progress" id="relay-connection-progress">[░░░░░░░░░░░░░░░░░░░░░░░░] 000%</div>
+                                    <p class="relay-status-line">&gt; CONNECTION PROCESS ACTIVE<span class="relay-wait-cursor">█</span></p>
+                                </div>
+                            `;
 
             const connectionSteps = [
                 { text: "SCANNING SUBNET 192.168.88.0/24...", progress: 12, delay: 720, tone: 260 },
@@ -2533,9 +2585,9 @@
             { speaker: "J", text: "You uploaded your own music?" },
             { speaker: "R", text: "yeah" },
             { speaker: "R", text: "better than silence :)" },
-            { speaker: "R", text: "try track 1" },
+            { speaker: "R", text: "let's try track 1" },
             { action: "AUTO_PLAY" },
-            { speaker: "R", text: "ahhh much much better", pauseAfter: 10000 },
+            { speaker: "R", text: "much much better", pauseAfter: 10000 },
             { speaker: "R", text: "hold up just had a thought", pauseAfter: 900 },
             { speaker: "R", text: "if i could repair that..." },
             { speaker: "R", text: "i might be able to restore another corrupted entry", pauseAfter: 1100 },
@@ -2931,25 +2983,25 @@
             if (!relayContent) return;
 
             relayContent.innerHTML = `
-                            <div class="relay-chat">
-                                <div class="relay-chat-header">
-                                    <span>RELAY CHAT://Razz_matazzim</span>
-                                    <span class="relay-chat-status">
-                                        <span class="relay-chat-dot"></span>
-                                        <span class="relay-chat-status-text">CONNECTED</span>
-                                    </span>
+                                <div class="relay-chat">
+                                    <div class="relay-chat-header">
+                                        <span>RELAY CHAT://Razz_matazzim</span>
+                                        <span class="relay-chat-status">
+                                            <span class="relay-chat-dot"></span>
+                                            <span class="relay-chat-status-text">CONNECTED</span>
+                                        </span>
+                                    </div>
+                                    <div class="relay-chat-log" id="relay-chat-log">
+                                        <div class="relay-chat-system">&gt; SECURE RELAY ESTABLISHED</div>
+                                        <div class="relay-chat-system">&gt; USER Razz_matazzim CONNECTED</div>
+                                    </div>
+                                    <div class="relay-chat-typing" id="relay-chat-typing"></div>
+                                    <div class="relay-chat-input-row">
+                                        <input class="relay-chat-input" id="relay-chat-input" type="text" placeholder="awaiting incoming transmission..." disabled />
+                                        <button class="boot-button" id="relay-chat-send" type="button" disabled>[ SEND ]</button>
+                                    </div>
                                 </div>
-                                <div class="relay-chat-log" id="relay-chat-log">
-                                    <div class="relay-chat-system">&gt; SECURE RELAY ESTABLISHED</div>
-                                    <div class="relay-chat-system">&gt; USER Razz_matazzim CONNECTED</div>
-                                </div>
-                                <div class="relay-chat-typing" id="relay-chat-typing"></div>
-                                <div class="relay-chat-input-row">
-                                    <input class="relay-chat-input" id="relay-chat-input" type="text" placeholder="awaiting incoming transmission..." disabled />
-                                    <button class="boot-button" id="relay-chat-send" type="button" disabled>[ SEND ]</button>
-                                </div>
-                            </div>
-                        `;
+                            `;
 
             updateRelayStatusDisplay("CONNECTED", "Razz_matazzim");
             relayDialogueIndex = 0;
@@ -3056,34 +3108,34 @@
             relayUnlocked = true;
 
             relayContent.innerHTML = `
-                        <div class="relay-chat">
-                            <div class="relay-chat-header">
-                                <span>RELAY CHAT://Razz_matazzim</span>
-                                <span class="relay-chat-status">
-                                    <span class="relay-chat-dot" style="background: transparent; box-shadow: none;"></span>
-                                    <span class="relay-chat-status-text">DISCONNECTED</span>
-                                </span>
-                            </div>
+                            <div class="relay-chat">
+                                <div class="relay-chat-header">
+                                    <span>RELAY CHAT://Razz_matazzim</span>
+                                    <span class="relay-chat-status">
+                                        <span class="relay-chat-dot" style="background: transparent; box-shadow: none;"></span>
+                                        <span class="relay-chat-status-text">DISCONNECTED</span>
+                                    </span>
+                                </div>
 
-                            <div class="relay-chat-log" id="relay-chat-log">
-                                <div class="relay-chat-system">&gt; SECURE RELAY ESTABLISHED</div>
-                                    <div class="relay-chat-system">&gt; REMOTE USER LOST</div>
-                            </div>
+                                <div class="relay-chat-log" id="relay-chat-log">
+                                    <div class="relay-chat-system">&gt; SECURE RELAY ESTABLISHED</div>
+                                        <div class="relay-chat-system">&gt; REMOTE USER LOST</div>
+                                </div>
 
-                            <div class="relay-chat-typing" id="relay-chat-typing"></div>
+                                <div class="relay-chat-typing" id="relay-chat-typing"></div>
 
-                            <div class="relay-chat-input-row">
-                                <input
-                                    class="relay-chat-input"
-                                    id="relay-chat-input"
-                                    type="text"
-                                    placeholder="relay connection lost"
-                                    disabled
-                                />
-                                <button class="boot-button" id="relay-chat-send" type="button" disabled>[ SEND ]</button>
+                                <div class="relay-chat-input-row">
+                                    <input
+                                        class="relay-chat-input"
+                                        id="relay-chat-input"
+                                        type="text"
+                                        placeholder="relay connection lost"
+                                        disabled
+                                    />
+                                    <button class="boot-button" id="relay-chat-send" type="button" disabled>[ SEND ]</button>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
         }
 
         document.addEventListener("click", async (event) => {
